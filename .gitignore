@@ -1,0 +1,30 @@
+# Backend (Python/Django)
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.env
+db.sqlite3
+*.sqlite3
+media/
+
+# Frontend (Node.js/React)
+node_modules/
+dist/
+dist-ssr
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
