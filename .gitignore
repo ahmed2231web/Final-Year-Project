@@ -28,3 +28,6 @@ dist-ssr
 *.swp
 *.swo
 .DS_Store
+
+# Other
+git token.txt
