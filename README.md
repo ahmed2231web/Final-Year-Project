@@ -127,6 +127,7 @@ Access the application at `http://localhost:5173`
 
 ## 👥 Meet the Team
 
+<<<<<<< HEAD
 ### Core Team
 - **Ahmed Atta Ur Rehman** - Project Lead & Full-Stack Developer
   - 🔧 Backend Architecture
@@ -167,3 +168,7 @@ Give a ⭐️ if this project helped you!
 <div align="center">
 Made with ❤️ by the AgroConnect Team
 </div>
+=======
+## Contact
+Project Link: [https://github.com/yourusername/AgroConnect](https://github.com/yourusername/AgroConnect)
+>>>>>>> 4c92f83cbcd7308b083d54eddec3b480b0dcb3d3
