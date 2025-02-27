@@ -1,0 +1,19 @@
+INFO 2025-02-27 15:00:41,173 autoreload Watching for file changes with StatReloader
+INFO 2025-02-27 15:01:04,758 autoreload Watching for file changes with StatReloader
+INFO 2025-02-27 15:02:52,438 basehttp "POST /auth/users/ HTTP/1.1" 201 165
+INFO 2025-02-27 15:03:06,699 views Account activation attempt with UID: ODE
+INFO 2025-02-27 15:03:06,722 views Found user with ID: 81, email: felaxi6270@egvoo.com
+INFO 2025-02-27 15:03:11,056 views Successfully activated user: felaxi6270@egvoo.com
+INFO 2025-02-27 15:03:11,060 basehttp "GET /auth/user/activate/ODE/clw1so-4991a17b318418658d4f2cdea97bf967/ HTTP/1.1" 200 32
+INFO 2025-02-27 15:03:11,075 views Account activation attempt with UID: ODE
+INFO 2025-02-27 15:03:11,104 views Found user with ID: 81, email: felaxi6270@egvoo.com
+INFO 2025-02-27 15:03:14,683 views Successfully activated user: felaxi6270@egvoo.com
+INFO 2025-02-27 15:03:14,687 basehttp "GET /auth/user/activate/ODE/clw1so-4991a17b318418658d4f2cdea97bf967/ HTTP/1.1" 200 32
+INFO 2025-02-27 15:12:54,043 autoreload /home/ahmed/Desktop/Final Year Project/backend/users/views.py changed, reloading.
+INFO 2025-02-27 15:12:55,158 autoreload Watching for file changes with StatReloader
+INFO 2025-02-27 15:14:41,632 basehttp "OPTIONS /auth/user/password-reset/request/ HTTP/1.1" 200 0
+INFO 2025-02-27 15:14:44,737 basehttp "POST /auth/user/password-reset/request/ HTTP/1.1" 200 39
+INFO 2025-02-27 15:15:35,050 basehttp "OPTIONS /auth/user/password-reset/ODE/clw2ch-3c02aa8fd8a50e8b9ecc875e7893b09b/ HTTP/1.1" 200 0
+INFO 2025-02-27 15:15:39,528 basehttp "POST /auth/user/password-reset/ODE/clw2ch-3c02aa8fd8a50e8b9ecc875e7893b09b/ HTTP/1.1" 200 41
+INFO 2025-02-27 15:16:42,270 basehttp "OPTIONS /auth/jwt/create/ HTTP/1.1" 200 0
+INFO 2025-02-27 15:16:46,088 basehttp "POST /auth/jwt/create/ HTTP/1.1" 200 486

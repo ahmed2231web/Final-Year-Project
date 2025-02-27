@@ -2,32 +2,33 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import RegexValidator
 
-# Create your models here.
+# Custom user manager for handling user creation and superuser creation
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, phoneNumber, email, fullName, user_type, province=None, city=None, password=None, **extra_fields):
+    def create_user(self, phone_number, email, full_name, user_type, province=None, city=None, password=None, **extra_fields):
         '''
         Creates and saves a new user
         '''
-        if not phoneNumber:
-            raise ValueError('Users must have a phone number')
+        if not email:
+            raise ValueError('Users must have an email address')
 
         # Create a new user instance with normalized email
         user = self.model(
-            phoneNumber=phoneNumber,
+            phone_number=phone_number,
             email=self.normalize_email(email),
-            fullName=fullName,
+            full_name=full_name,
             user_type=user_type,
             province=province,
             city=city,
+            is_active = False,
             **extra_fields
         )
 
-        user.set_password(password) # Hash the password
+        user.set_password(password)  # Hash the password
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, phoneNumber, email, fullName, user_type=None, province=None, city=None, password=None):
+    def create_superuser(self, phone_number, email, full_name, user_type=None, province=None, city=None, password=None):
         '''
         Creates and saves a superuser with administrative privileges.
         Superusers are always created with ADMIN user_type.
@@ -38,11 +39,11 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Province field is required')
         if not city:
             raise ValueError('City field is required')
-            
+
         user = self.create_user(
-            phoneNumber=phoneNumber,
+            phone_number=phone_number,
             email=email,
-            fullName=fullName,
+            full_name=full_name,
             user_type=self.model.UserType.ADMIN,
             province=province,
             city=city,
@@ -54,29 +55,28 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+# Custom user model for the platform
 class CustomUser(AbstractBaseUser):
     '''
-    Custom user model for AgroConnect platform
+    Custom user model for the platform
     '''
     class UserType(models.TextChoices):
         CUSTOMER = 'CUSTOMER', 'Customer'
         FARMER = 'FARMER', 'Farmer'
-        DOCTOR = 'DOCTOR', 'Doctor'
         ADMIN = 'ADMIN', 'Admin'  # Only for superusers
 
     email = models.EmailField(unique=True)
 
-    fullName = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=100)
 
     # Phone number with format validation
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,14}$',
         message="Phone number must be entered in the format: '+999999999'. Up to 14 digits allowed."
     )
-
-    phoneNumber = models.CharField(
-        validators=[phone_regex], 
-        max_length=15, 
+    phone_number = models.CharField(
+        validators=[phone_regex],
+        max_length=15,
         unique=True
     )
 
@@ -93,10 +93,9 @@ class CustomUser(AbstractBaseUser):
             'null': 'Province field is required'
         }
     )
-    
+
     city = models.CharField(
         max_length=30,
-        # default='Unknown',  # Temporary default for migration
         error_messages={
             'blank': 'City field is required',
             'null': 'City field is required'
@@ -111,18 +110,18 @@ class CustomUser(AbstractBaseUser):
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'phoneNumber'
+    USERNAME_FIELD = 'email'
 
-    REQUIRED_FIELDS = ['fullName', 'email', 'user_type', 'province', 'city']
+    REQUIRED_FIELDS = ['full_name', 'phone_number', 'user_type', 'province', 'city']
 
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         db_table = 'users'  # Custom table name in database
-    
+
     def __str__(self):
         """String representation of the user"""
-        return f"{self.fullName} ({self.user_type})"
+        return f"{self.full_name} ({self.user_type})"
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser

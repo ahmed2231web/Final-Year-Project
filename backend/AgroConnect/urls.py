@@ -9,5 +9,5 @@ urlpatterns = [
     path('auth/', include('djoser.urls.jwt')),
 
     # apps urls
-    # path('', include('users.urls')),
+    path('auth/', include('users.urls')),
 ]

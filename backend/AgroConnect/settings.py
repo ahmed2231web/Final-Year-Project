@@ -61,6 +61,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
+FRONTEND_DOMAIN = getenv("FRONTEND_DOMAIN")
+
+SITE_NAME = getenv("SITE_NAME")
+
 
 TEMPLATES = [
     {
@@ -149,7 +153,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 # Configure django-rest-framework-simplejwt to use the Authorization: JWT <access_token> header
 SIMPLE_JWT = {
    # Specifies that the token type will be 'JWT' in the Authorization header
-   "AUTH_HEADER_TYPES": ('JWT',),
+   "AUTH_HEADER_TYPES": ('Bearer',),
 
    # Sets how long an access token remains valid (30 minutes)
    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
@@ -162,7 +166,7 @@ SIMPLE_JWT = {
 }
 
 
-#? JSON Web Token Authentication
+#? JSON-Web-Token Authentication
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -174,32 +178,17 @@ REST_FRAMEWORK = {
 
 # Djoser Configurations
 DJOSER = {
-    # Use phoneNumber as the login field instead of username
-    'LOGIN_FIELD': 'phoneNumber',
-    
+    # Use email as the login field instead of username
+    'LOGIN_FIELD': 'email', 
+
     # Force password retyping during user creation
     'USER_CREATE_PASSWORD_RETYPE': True,
 
     # Force password retyping when setting a new password
     'SET_PASSWORD_RETYPE': True,
 
-    # Enable sending activation emails
-    'SEND_ACTIVATION_EMAIL': False,
-
-    # Enable sending confirmation emails
-    'SEND_CONFIRMATION_EMAIL': False,
-
-    # Send email confirmation when password is changed
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-
-    # URL for password reset
-    'PASSWORD_RESET_CONFIRM_URL': '/password-reset/{uid}/{token}',
-
     # Show email not found message during password reset
     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
-
-    # Disable default token model
-    'TOKEN_MODEL': None,
 
     # Serializers
     'SERIALIZERS': {
@@ -211,17 +200,74 @@ DJOSER = {
         
         # Default Djoser serializer for user deletion - handles user account deletion
         'user_delete': 'djoser.serializers.UserDeleteSerializer',
+    },
+
+    # When True, generates new refresh token after each refresh token use
+    # Enhances security by rotating tokens regularly
+    "ROTATE_REFRESH_TOKENS": True,
         
-        # When True, generates new refresh token after each refresh token use
-        # Enhances security by rotating tokens regularly
-        "ROTATE_REFRESH_TOKENS": True,
+    # When True, adds used refresh tokens to blacklist after rotation
+    # Prevents reuse of old refresh tokens, improving security
+    "BLACKLIST_AFTER_ROTATION": True,
         
-        # When True, adds used refresh tokens to blacklist after rotation
-        # Prevents reuse of old refresh tokens, improving security
-        "BLACKLIST_AFTER_ROTATION": True,
-        
-        # When False, doesn't update last login timestamp
-        # Can improve performance by reducing database writes
-        "UPDATE_LAST_LOGIN": True,
-    }
+    # When False, doesn't update last login timestamp
+    # Can improve performance by reducing database writes
+    "UPDATE_LAST_LOGIN": True,
+}
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = getenv("EMAIL_HOST_USER")     
+EMAIL_HOST_PASSWORD = getenv("EMAIL_HOST_PASSWORD")  
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# Create logs directory if it doesn't exist
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'users': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }

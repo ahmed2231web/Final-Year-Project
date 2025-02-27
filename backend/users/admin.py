@@ -1,34 +1,71 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import CustomUser  # Import from current directory, not from User
+from .models import CustomUser  # Import the CustomUser model from the current directory
 
 class UserModelAdmin(BaseUserAdmin):
+    """
+    Custom admin configuration for the CustomUser model.
+    Extends Django's BaseUserAdmin to customize the admin interface.
+    """
+
     # Display fields in the list view
-    list_display = ('id', 'email', 'fullName', 'phoneNumber', 'province', 'city', 'user_type', 'is_active', 'date_joined')
+    list_display = (
+        'id', 'email', 'full_name', 'phone_number', 'province', 'city',
+        'user_type', 'is_active', 'date_joined'
+    )
+    # Specifies the fields to display in the list view of the admin interface.
+    # Includes user ID, email, full name, phone number, province, city, user type,
+    # active status, and the date the user joined.
+
     list_filter = ('user_type', 'is_active', 'province', 'city')
-    
+    # Adds filters to the admin list view to allow filtering by user type,
+    # active status, province, and city.
+
     # Fields arrangement in detail view
     fieldsets = (
         ('User Credentials', {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('fullName', 'phoneNumber', 'province', 'city')}),
+        # Group fields related to user credentials (email and password) in the detail view.
+
+        ('Personal info', {'fields': ('full_name', 'phone_number', 'province', 'city')}),
+        # Group personal information fields (full name, phone number, province, and city) in the detail view.
+
         ('Type and Status', {'fields': ('user_type',)}),
+        # Group the user type field in the detail view.
+
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
-        ('Important dates', {'fields': ('last_login',)}),  # Removed date_joined as it's non-editable
+        # Group permission-related fields (active status, staff status, and superuser status) in the detail view.
+
+        ('Important dates', {'fields': ('last_login',)}),
+        # Group important date fields (last login) in the detail view.
+        # The 'date_joined' field is excluded as it is non-editable.
     )
-    
+
     # Fields shown when creating a new user
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'fullName', 'phoneNumber', 
-                      'province', 'city', 'user_type', 'password1', 'password2'),
+            'fields': (
+                'email', 'full_name', 'phone_number', 'province', 'city',
+                'user_type', 'password1', 'password2'
+            ),
         }),
     )
-    
-    readonly_fields = ('date_joined', 'last_login')  # Make these fields read-only
-    search_fields = ('email', 'fullName', 'phoneNumber', 'province', 'city')
+    # Specifies the fields to display when creating a new user in the admin interface.
+    # Includes email, full name, phone number, province, city, user type, and password fields.
+
+    readonly_fields = ('date_joined', 'last_login')
+    # Makes the 'date_joined' and 'last_login' fields read-only in the admin interface.
+
+    search_fields = ('email', 'full_name', 'phone_number', 'province', 'city')
+    # Adds search functionality to the admin list view, allowing searches by email,
+    # full name, phone number, province, and city.
+
     ordering = ('email', 'id')
+    # Specifies the default ordering of records in the admin list view by email and ID.
+
     filter_horizontal = ()
+    # Specifies that no fields should use the horizontal filter widget in the admin interface.
 
 # Register the CustomUser model with the admin interface
 admin.site.register(CustomUser, UserModelAdmin)
+# Registers the CustomUser model with the admin interface using the custom UserModelAdmin configuration.
