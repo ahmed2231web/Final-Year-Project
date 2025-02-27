@@ -135,7 +135,6 @@ Access the application at `http://localhost:5173`
 
 - **Sami Ullah** - UI/UX Design Lead
   - 🎨 Interface Design
-  - 🖌️ Brand Identity
   - 📱 User Experience
 
 - **Ahmad Mubashir / Ahsan Ullah** - Frontend Development
