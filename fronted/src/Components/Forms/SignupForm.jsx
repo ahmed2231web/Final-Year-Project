@@ -1,3 +1,4 @@
+// src/components/forms/SignupForm.jsx
 import React, { useState } from "react";
 import Button from "../../Components/Common/Button";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,14 +19,20 @@ const locationData = {
   },
 };
 
+const getCSRFToken = () => {
+  const cookies = document.cookie.split(';');
+  const csrfCookie = cookies.find(row => row.trim().startsWith('csrftoken='));
+  return csrfCookie ? csrfCookie.split('=')[1] : '';
+};
+
 const API_URL = "http://127.0.0.1:8000";
 
 function SignUpForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
-    fullName: "",
-    phoneNumber: "",
+    full_name: "",
+    phone_number: "",
     user_type: "FARMER",
     province: "",
     city: "",
@@ -40,19 +47,17 @@ function SignUpForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name === "phoneNumber") {
-      // Handle phone number formatting
+
+    if (name === "phone_number") {
       let formattedNumber = value;
       if (!value.startsWith('+92')) {
-        formattedNumber = value.replace(/^\+92|^92|^0/g, ''); // Remove existing prefixes
+        formattedNumber = value.replace(/^\+92|^92|^0/g, '');
         if (formattedNumber.length > 0) {
           formattedNumber = '+92' + formattedNumber;
         }
       }
-      // Only allow digits after the +92 prefix
       formattedNumber = formattedNumber.replace(/[^\+\d]/g, '');
-      
+
       setFormData(prev => ({
         ...prev,
         [name]: formattedNumber
@@ -92,7 +97,6 @@ function SignUpForm() {
   };
 
   const validatePassword = (password) => {
-    // Simpler password validation
     if (password.length < 8) {
       setPasswordError("Password must be at least 8 characters long");
       return false;
@@ -114,14 +118,13 @@ function SignUpForm() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Basic validation before submission
     if (!validateEmail(formData.email)) {
       alert("Please enter a valid email address");
       setIsLoading(false);
       return;
     }
 
-    if (!validatePhone(formData.phoneNumber)) {
+    if (!validatePhone(formData.phone_number)) {
       alert("Please enter a valid phone number in format: +923xxxxxxxxx");
       setIsLoading(false);
       return;
@@ -138,16 +141,10 @@ function SignUpForm() {
     }
 
     try {
-      console.log("Sending registration request with data:", {
-        ...formData,
-        password: "***",
-        re_password: "***"
-      });
-
       const response = await axios.post(`${API_URL}/auth/users/`, {
         email: formData.email,
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
+        full_name: formData.full_name,
+        phone_number: formData.phone_number,
         user_type: formData.user_type,
         province: formData.province,
         city: formData.city,
@@ -155,27 +152,14 @@ function SignUpForm() {
         re_password: formData.re_password
       }, {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
+        },
+        // withCredentials: true
       });
 
-      console.log("Registration response:", response);
-
       if (response.status === 201) {
-        // Clear form
-        setFormData({
-          email: "",
-          fullName: "",
-          phoneNumber: "",
-          user_type: "FARMER",
-          province: "",
-          city: "",
-          password: "",
-          re_password: ""
-        });
-        
-        // Redirect to login page
-        navigate('/login');
+        navigate('/activation-pending');  // Redirect to activation pending page
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -218,38 +202,38 @@ function SignUpForm() {
 
       {/* Full Name */}
       <div>
-        <label htmlFor="fullName" className="block text-sm font-normal text-white mb-3">
+        <label htmlFor="full_name" className="block text-sm font-normal text-white mb-3">
           Full Name
         </label>
         <input
-          id="fullName"
-          name="fullName"
+          id="full_name"
+          name="full_name"
           type="text"
           required
           className="w-full max-w-xl rounded-full border px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
           placeholder="Enter your full name"
-          value={formData.fullName}
+          value={formData.full_name}
           onChange={handleChange}
         />
       </div>
 
       {/* Phone */}
       <div>
-        <label htmlFor="phoneNumber" className="block text-sm font-normal text-white mb-3">
+        <label htmlFor="phone_number" className="block text-sm font-normal text-white mb-3">
           Phone Number
         </label>
         <input
-          id="phoneNumber"
-          name="phoneNumber"
+          id="phone_number"
+          name="phone_number"
           type="tel"
           required
           className="w-full max-w-xl rounded-full border px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
           placeholder="+923xxxxxxxxx"
-          value={formData.phoneNumber}
+          value={formData.phone_number}
           onChange={handleChange}
           maxLength={13}
         />
-        {formData.phoneNumber && !validatePhone(formData.phoneNumber) && (
+        {formData.phone_number && !validatePhone(formData.phone_number) && (
           <p className="text-yellow-400 text-sm">Phone number must be in format: +923xxxxxxxxx</p>
         )}
       </div>
@@ -350,7 +334,6 @@ function SignUpForm() {
           onChange={handleChange}
         >
           <option value="FARMER">Farmer</option>
-          <option value="DOCTOR">Doctor</option>
           <option value="CUSTOMER">Customer</option>
         </select>
       </div>

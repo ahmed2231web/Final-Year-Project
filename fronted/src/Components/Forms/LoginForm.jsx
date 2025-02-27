@@ -3,12 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "../../Components/Common/Button";
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://localhost:8000";
 
 function LoginForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    phoneNumber: "",
+    email: "",
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -31,42 +31,32 @@ function LoginForm() {
       const response = await axios.post(
         `${API_URL}/auth/jwt/create/`,
         {
-          phoneNumber: formData.phoneNumber,
+          email: formData.email,
           password: formData.password,
         },
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
       if (response.status === 200 && response.data) {
-        // Store tokens in localStorage
-        localStorage.setItem('accessToken', response.data.access);
-        localStorage.setItem('refreshToken', response.data.refresh);
-        
-        // Set authorization header for future requests
-        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
-        
-        // Clear form
-        setFormData({
-          phoneNumber: "",
-          password: "",
-        });
-
-        // Directly redirect to home page
-        window.location.href = '/';
+        localStorage.setItem("accessToken", response.data.access);
+        localStorage.setItem("refreshToken", response.data.refresh);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;
+        setFormData({ email: "", password: "" });
+        window.location.href = "/";
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       if (error.response?.data) {
         const errorMessage = Object.entries(error.response.data)
-          .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-          .join('\n');
+          .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+          .join("\n");
         setError(errorMessage);
       } else {
-        setError('Failed to login. Please check your credentials and try again.');
+        setError("Failed to login. Please check your credentials and try again.");
       }
     } finally {
       setIsLoading(false);
@@ -81,51 +71,38 @@ function LoginForm() {
         </div>
       )}
 
-      {/* Phone Number Field */}
       <div>
-        <label
-          htmlFor="phoneNumber"
-          className="block text-sm font-normal text-white mb-3"
-        >
-          Phone Number
+        <label htmlFor="email" className="block text-sm font-normal text-white mb-3">
+          Email Address
         </label>
-        <div className="mt-1">
-          <input
-            id="phoneNumber"
-            name="phoneNumber"
-            type="tel"
-            required
-            className="w-full max-w-xl rounded-full border border-stone-200 px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
-            placeholder="+923xxxxxxxxx"
-            value={formData.phoneNumber}
-            onChange={handleChange}
-          />
-        </div>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          className="w-full max-w-xl rounded-full border border-stone-200 px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
+          placeholder="Enter your email"
+          value={formData.email}
+          onChange={handleChange}
+        />
       </div>
 
-      {/* Password Field */}
       <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-normal text-white mb-3"
-        >
+        <label htmlFor="password" className="block text-sm font-normal text-white mb-3">
           Password
         </label>
-        <div className="mt-1">
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="w-full max-w-xl rounded-full border border-stone-200 px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-        </div>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          className="w-full max-w-xl rounded-full border border-stone-200 px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
+          placeholder="Enter your password"
+          value={formData.password}
+          onChange={handleChange}
+        />
       </div>
 
-      {/* Remember Me and Forgot Password */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <input
@@ -134,42 +111,27 @@ function LoginForm() {
             type="checkbox"
             className="h-4 w-4 text-green-500 focus:ring-green-500 border-gray-300 rounded"
           />
-          <label
-            htmlFor="remember-me"
-            className="ml-2 block text-sm text-gray-300"
-          >
+          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
             Remember me
           </label>
         </div>
         <div className="text-sm">
-          <Link
-            to="/forgot-password"
-            className="font-medium text-white hover:text-green-300"
-          >
+          <Link to="/forgot-password" className="font-medium text-white hover:text-green-300">
             Forgot your password?
           </Link>
         </div>
       </div>
 
-      {/* Submit Button */}
       <div className="flex justify-end">
-        <Button 
-          variant="button" 
-          className="bg-yellow-400"
-          disabled={isLoading}
-        >
+        <Button variant="button" className="bg-yellow-400" disabled={isLoading}>
           {isLoading ? "Logging in..." : "Login"}
         </Button>
       </div>
 
-      {/* Sign Up Link */}
       <div className="text-center">
         <p className="text-sm text-gray-300">
           Don&apos;t have an account?{" "}
-          <Link
-            to="/signup"
-            className="font-medium text-white hover:text-green-300"
-          >
+          <Link to="/signup" className="font-medium text-white hover:text-green-300">
             Sign up
           </Link>
         </p>
