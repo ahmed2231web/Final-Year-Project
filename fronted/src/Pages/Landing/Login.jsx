@@ -1,7 +1,7 @@
 import React from "react";
-import LoginForm from "../../Components/Forms/LoginForm";
-import Image from "../../Components/Common/Image";
-import Button from "../../Components/Common/Button";
+import LoginForm from "../../Features/Authentication/LoginForm";
+import Image from "../../ui/Image";
+import Button from "../../ui/Button";
 
 function Login() {
   return (
@@ -10,7 +10,7 @@ function Login() {
       <Image/>
 
       {/* Form Section */}
-      <div className="w-full max-w-md px-4">
+      <div className="w-full max-w-md px-4 mt-10">
         {/* Title */}
         <div className="text-center mb-6"> {/* Reduced margin */}
           <h2 className="text-white text-l">Welcome to <span className="font-agbluma">AgroConnect</span></h2>

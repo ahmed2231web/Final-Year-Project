@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Hero from '../../Components/Common/Hero';
-import Section from "../../Components/FAQ/Section";
+import Hero from '../../ui/Hero';
+import Section from "../../ui/Section";
 
 // FAQ Data (unchanged)
 const faq = [
