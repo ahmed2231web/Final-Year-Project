@@ -2,6 +2,14 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import RegexValidator
 
+import shortuuid
+
+
+# Function to generate short UUIDs
+def generate_short_uuid():
+    """Generate a short UUID for user IDs"""
+    return shortuuid.uuid()[:10]  # Using first 10 chars for brevity
+
 # Custom user manager for handling user creation and superuser creation
 
 class CustomUserManager(BaseUserManager):
@@ -60,6 +68,15 @@ class CustomUser(AbstractBaseUser):
     '''
     Custom user model for the platform
     '''
+
+    id = models.CharField(
+        primary_key=True,
+        default=generate_short_uuid,
+        editable=False,
+        max_length=10,
+        unique=True
+    )
+
     class UserType(models.TextChoices):
         CUSTOMER = 'CUSTOMER', 'Customer'
         FARMER = 'FARMER', 'Farmer'

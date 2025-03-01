@@ -1,5 +1,5 @@
 import React from 'react';
-import SignupForm from '../../Features/Authentication/SignupForm';
+import SignupForm from '../../Components/Forms/SignupForm';
 import Image from "../../ui/Image";
 import Button from '../../ui/Button';
 
