@@ -4,6 +4,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import Logo from "../../assets/Logo.png";
 import Button from './Button';
 import axios from 'axios';
+import authService from '../../Services/authService';
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,15 +12,26 @@ function Header() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is authenticated
-    const token = localStorage.getItem('accessToken');
-    setIsAuthenticated(!!token);
+    // Check if user is authenticated using authService
+    const checkAuthStatus = () => {
+      setIsAuthenticated(authService.isAuthenticated());
+    };
+    
+    // Check authentication status initially
+    checkAuthStatus();
+    
+    // Create a custom event to listen for auth state changes
+    window.addEventListener('auth-state-change', checkAuthStatus);
+    
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener('auth-state-change', checkAuthStatus);
+    };
   }, []);
 
   const handleLogout = () => {
-    // Clear tokens
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    // Use authService to logout
+    authService.logout();
     
     // Remove authorization header
     delete axios.defaults.headers.common['Authorization'];
@@ -27,8 +39,11 @@ function Header() {
     // Update authentication state
     setIsAuthenticated(false);
     
-    // Force page reload to update all components
-    window.location.href = '/';
+    // Dispatch auth state change event
+    window.dispatchEvent(new Event('auth-state-change'));
+    
+    // Navigate to home page
+    navigate('/');
   };
 
   return (

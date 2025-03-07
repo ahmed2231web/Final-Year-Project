@@ -1,11 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '../Features/Farmer/Sidebar';
 import { IoIosNotifications } from "react-icons/io";
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Logo from "../assets/Logo.png";
 import { FaBars } from 'react-icons/fa';
+import authService from '../Services/authService';
+import { toast } from 'react-hot-toast';
 
 function Header({ toggleSidebar }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    try {
+      authService.logout();
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      toast.error('Failed to logout. Please try again.');
+    }
+  };
+
   return (
     <div className="bg-[#0A690E] text-white flex justify-between items-center p-4 relative z-50">
       {/* Sidebar Toggle Button */}
@@ -26,7 +41,10 @@ function Header({ toggleSidebar }) {
         <NavLink to="/farmer/notifications" className="text-2xl">
           <IoIosNotifications />
         </NavLink>
-        <button className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700">
+        <button 
+          className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700"
+          onClick={handleLogout}
+        >
           Logout
         </button>
       </div>
@@ -39,6 +57,27 @@ function Header({ toggleSidebar }) {
 function FarmerLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log('FarmerLayout mounted');
+    console.log('Current path:', location.pathname);
+    
+    const token = authService.getToken();
+    console.log('Has token:', !!token);
+    
+    if (!token) {
+      console.log('No token found in FarmerLayout, redirecting to login');
+      navigate('/login');
+      return;
+    }
+    
+    // If we're at exactly /farmer, redirect to /farmer/dashboard
+    if (location.pathname === '/farmer') {
+      console.log('At /farmer root, redirecting to /farmer/dashboard');
+      navigate('/farmer/dashboard');
+    }
+  }, [navigate, location.pathname]);
 
   return (
     <div className="h-screen flex flex-col">

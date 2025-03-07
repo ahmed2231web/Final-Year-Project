@@ -17,10 +17,14 @@ import TermsAndConditions from "./Pages/Landing/TermsAndConditions";
 
 import Dashboard from "./Features/Farmer/Dashboard/Dashboard";
 import Products from "./Features/Farmer/AllProducts/Products";
+import CloudinaryTest from './Features/Farmer/AllProducts/CloudinaryTest';
+import CloudinaryTestSimple from './Features/Farmer/AllProducts/CloudinaryTestSimple';
+import EnvTest from './Features/Farmer/AllProducts/EnvTest';
 import ChatComponent from "./Features/Farmer/Chats/ChatComponent";
 import SidebarChat from "./Features/Farmer/Chats/SidebarChat";
 import Chatbot from "./Features/Farmer/Chatbot";
 import Notifications from "./Features/Farmer/Notifications";
+import ProtectedFarmerRoute from "./Components/Common/ProtectedRoute";
 
 import ActivationPending from "./Components/Forms/ActivationPending";
 import ActivateAccount from "./Components/Forms/ActivateAccount";
@@ -86,13 +90,29 @@ const router = createBrowserRouter([
       {
         path: "/password-reset/:uid/:token",
         element: <PasswordResetConfirm />
-      }
+      },
+      {
+        path: "/cloudinary-test",
+        element: <CloudinaryTest />,
+      },
+      {
+        path: "/cloudinary-test-simple",
+        element: <CloudinaryTestSimple />,
+      },
+      {
+        path: "/env-test",
+        element: <EnvTest />,
+      },
     ],
   },
   {
     path: "/farmer", // Route for Farmer Dashboard
-    element: <FarmerLayout />,
+    element: <ProtectedFarmerRoute><FarmerLayout /></ProtectedFarmerRoute>,
     children: [
+      {
+        index: true, // This makes it the default route for /farmer
+        element: <Dashboard />,
+      },
       {
         path: "dashboard",
         element: <Dashboard />,
