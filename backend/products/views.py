@@ -1,9 +1,8 @@
-from django.shortcuts import render
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import Product
-from .serializers import ProductSerializer
+from products.models import Product
+from products.serializers import ProductSerializer
 from rest_framework.permissions import IsAuthenticated
 import logging
 import cloudinary

@@ -12,4 +12,8 @@ urlpatterns = [
     
     # Products API endpoints
     path('api/products/', include('products.urls')),
+
+    # Disease Detection API endpoints
+    # AI Chatbot API endpoints
+    path('api/chatbot/', include('ai_chatbot.urls')),
 ]

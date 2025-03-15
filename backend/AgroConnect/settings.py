@@ -17,6 +17,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = getenv("SECRET_KEY")
 
+# Gemini API Key
+GEMINI_API_KEY = getenv('GEMINI_API_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -25,6 +28,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    "admin_interface",  # Django admin interface customization
+    "colorfield",  # Color field for admin interface
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +50,7 @@ INSTALLED_APPS = [
     # project apps
     'users',
     'products',
+    'ai_chatbot',
 ]
 
 MIDDLEWARE = [
@@ -153,6 +159,8 @@ CLOUDINARY_STORAGE = {
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = BASE_DIR / 'static_root'
+
 MEDIA_URL = '/media/'
 
 # Use Cloudinary storage for media files
@@ -240,8 +248,16 @@ DJOSER = {
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_PORT = getenv("EMAIL_PORT")
 EMAIL_HOST_USER = getenv("EMAIL_HOST_USER")     
 EMAIL_HOST_PASSWORD = getenv("EMAIL_HOST_PASSWORD")  
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+
+# Security settings - X-Frame-Options
+# SAMEORIGIN allows the page to be displayed in a frame on the same origin as the page itself
+X_FRAME_OPTIONS = "SAMEORIGIN"
+# Silencing specific security checks - W019 relates to X-Frame-Options
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
