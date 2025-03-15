@@ -1,22 +1,23 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 
-const InputProduct = forwardRef(function InputProduct({ id, type, placeholder, label, error, ...rest }, ref) {
+function InputProduct({ label, id, register, errors, validation, type = "text", placeholder = "" }) {
   return (
-    <div className="flex items-center space-x-4 w-full">
-      <label htmlFor={id} className="font-semibold w-1/4">
-        {label}
+    <div className="form-control w-full">
+      <label className="label">
+        <span className="label-text font-medium text-gray-700">{label}</span>
       </label>
       <input
-        className="w-1/2 px-4 py-2 border rounded-md"
-        id={id}
         type={type}
+        id={id}
         placeholder={placeholder}
-        ref={ref}
-        {...rest}
+        {...register(id, validation)}
+        className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
       />
-      {error && <span className="text-red-500 text-sm">{error}</span>}
+      {errors[id] && (
+        <span className="text-red-500 text-sm mt-1">{errors[id].message}</span>
+      )}
     </div>
   );
-});
+}
 
 export default InputProduct;

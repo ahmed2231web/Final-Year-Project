@@ -36,6 +36,7 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 ├── 🔧 backend/
 │   ├── AgroConnect/       # Core Django application
 │   ├── users/             # User management system
+│   ├── products/          # Product management system
 │   ├── manage.py         # Django CLI
 │   └── requirements.txt  # Python dependencies
 │

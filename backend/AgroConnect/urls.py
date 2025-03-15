@@ -4,10 +4,12 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # djsoer urls
+    # djoser urls (excluding JWT endpoints that we've customized)
     path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
-
-    # apps urls
+    
+    # Our custom JWT endpoints and user-specific endpoints
     path('auth/', include('users.urls')),
+    
+    # Products API endpoints
+    path('api/products/', include('products.urls')),
 ]

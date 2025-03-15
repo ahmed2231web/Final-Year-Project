@@ -4,10 +4,12 @@ from rest_framework import status
 from djoser.utils import encode_uid, decode_uid
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.conf import settings
 from django.core.mail import send_mail
 import logging
+from rest_framework.decorators import api_view, permission_classes
+from .permissions import IsFarmer
 
 # Create your views here.
 logger = logging.getLogger(__name__)
@@ -103,3 +105,33 @@ class PasswordResetConfirmView(APIView):
 
             except (User.DoesNotExist, ValueError, TypeError):
                 return Response({"error": "Invalid user"}, status=status.HTTP_400_BAD_REQUEST)
+
+# Auth check endpoints
+class FarmerAuthCheckView(APIView):
+    """
+    View to check if the user is authenticated and is a farmer.
+    Used to protect farmer routes in the frontend.
+    """
+    permission_classes = [IsFarmer]
+    
+    def get(self, request):
+        return Response({
+            "is_authenticated": True,
+            "user_type": request.user.user_type,
+            "user_id": request.user.id,
+            "full_name": request.user.full_name
+        }, status=status.HTTP_200_OK)
+
+class UserTypeView(APIView):
+    """
+    View to get the user type of the authenticated user.
+    Used to determine which routes to show in the frontend.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return Response({
+            "user_type": request.user.user_type,
+            "user_id": request.user.id,
+            "full_name": request.user.full_name
+        }, status=status.HTTP_200_OK)

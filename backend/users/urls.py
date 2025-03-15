@@ -1,6 +1,13 @@
 # users/urls.py
 from django.urls import path
-from .views import ActivateUserView, PasswordResetConfirmView, PasswordResetRequestView
+from .views import (
+    ActivateUserView, 
+    PasswordResetConfirmView, 
+    PasswordResetRequestView,
+    FarmerAuthCheckView,
+    UserTypeView,
+)
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     # URL for user account activation. Requires a UID and token as parameters.
@@ -14,4 +21,12 @@ urlpatterns = [
     # URL for confirming a password reset. Requires a UID and token as parameters.
     # The `PasswordResetConfirmView` handles the confirmation logic.
     path('user/password-reset/<str:uid>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    
+    # Auth check endpoints
+    path('user/check-farmer/', FarmerAuthCheckView.as_view(), name='check-farmer-auth'),
+    path('user/user-type/', UserTypeView.as_view(), name='get-user-type'),
+    
+    # JWT endpoints
+    path('jwt/create/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
+    path('jwt/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
 ]

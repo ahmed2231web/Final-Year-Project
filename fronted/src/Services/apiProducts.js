@@ -1,54 +1,66 @@
-import supabase from "./supabase";
+import axios from 'axios';
+import authService from './authService';
 
-export async function createEditProduct(product,id) {
-  
-  // Create/Edit Product
-  let query= supabase.from("products");
+const API_URL = 'http://localhost:8000/api';
 
-  // 1) Create 
-  if(!id)
-   query= query
-  .insert([
-  product
-])
-  // 2) Edit
-  if(id)
-   query= query.update(product)
-  .eq('id', id)
+export async function createEditProduct(product, id) {
+  const token = authService.getToken();
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
 
-const {data,error} = await query.select();
-
-    if (error) {
-      console.error("Error inserting data:", error);
-      throw new Error(error.message || "Product not added successfully");
-    }
-  
-    return data;
-  }
-
-  export async function getProduct() {
-    const { data: products, error } = await supabase
-      .from('products')
-      .select('*');
-  
-    if (error) {
-      console.error('Error fetching products:', error);
-      throw new Error("Products could not be loaded")
-    }
-  
-    return products;
-  }
-
-  export async function deleteProduct(productId) {
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", productId); // Deletes the product where the id matches
-  
-    if (error) {
-      console.error("Error deleting product:", error);
-      throw new Error(error.message || "Product could not be deleted");
-    }
+  try {
+    let response;
     
+    // Create new product
+    if (!id) {
+      response = await axios.post(`${API_URL}/products/`, product, { headers });
+    } 
+    // Edit existing product
+    else {
+      response = await axios.put(`${API_URL}/products/${id}/`, product, { headers });
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error with product operation:", error);
+    throw new Error(error.response?.data?.message || "Product operation failed");
   }
-  
+}
+
+export async function getProduct() {
+  try {
+    const token = authService.getToken();
+    const response = await axios.get(`${API_URL}/products/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    // If it's a 404, just return an empty array (no products yet)
+    if (error.response?.status === 404) {
+      return [];
+    }
+    console.error('Error fetching products:', error);
+    throw error; // Propagate the error for handling in the component
+  }
+}
+
+export async function deleteProduct(productId) {
+  try {
+    const token = authService.getToken();
+    await axios.delete(`${API_URL}/products/${productId}/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw new Error(error.response?.data?.message || "Product could not be deleted");
+  }
+}

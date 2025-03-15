@@ -1,56 +1,200 @@
-import React, { useState } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import AddProductForm from "./AddProductForm";
+import React, { useState } from 'react';
+import { FaEdit, FaTrash, FaChevronLeft, FaChevronRight, FaEye } from 'react-icons/fa';
+import { formatCurrency } from '../../../utils/helpers';
+import { motion } from 'framer-motion';
 
-function ProductCard({ product, onEdit, onDelete }) {
-   const [showForm,setShowForm] = useState(false);
+function ProductCard({ product, onEdit, onDelete, onView }) {
+  const { 
+    productName, 
+    category, 
+    price, 
+    discount, 
+    stockQuantity, 
+    imageUrl, 
+    imageUrl2, 
+    imageUrl3 
+  } = product;
+  
+  // Collect all available images
+  const images = [imageUrl, imageUrl2, imageUrl3].filter(Boolean);
+  
+  // State for current image index
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // State for image loading errors
+  const [imageError, setImageError] = useState(false);
+  
+  // State for hover effects
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Handle image loading error
+  const handleImageError = () => {
+    setImageError(true);
+  };
+  
+  // Navigate to next image
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+  
+  // Navigate to previous image
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+  
+  // Calculate discounted price
+  const discountedPrice = discount ? price - (price * (discount / 100)) : price;
+  
+  // Cloudinary transformation for optimized images
+  const getOptimizedImageUrl = (url) => {
+    if (!url || !url.includes('cloudinary.com')) return url;
+    
+    // Add Cloudinary transformations for optimization
+    return url.replace('/upload/', '/upload/c_fill,f_auto,q_auto,w_400,h_300/');
+  };
+  
   return (
-    <>
-    <div className="bg-white rounded-xl shadow-lg p-5 transition-all duration-300 hover:shadow-xl border border-gray-200 hover:border-green-400 max-w-[350px] flex flex-col">
-      {/* Product Image */}
-      <img
-        src={product.imageUrl}
-        alt={product.productName}
-        className="w-full h-56 object-cover rounded-lg"
-      />
-
-      {/* Product Details + Stock Badge in Flex */}
-      <div className="mt-4 flex flex-col gap-2">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-bold text-gray-800">{product.productName}</h3>
-          <span
-            className={`px-3 py-1 text-xs font-semibold rounded-full shadow-md ${
-              product.stock > 0 ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
-            }`}
+    <motion.div 
+      className="card bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:scale-[1.02]"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ y: -5 }}
+      onClick={() => onView(product)}
+    >
+      {/* Product Image with Carousel */}
+      <div className="relative h-52 bg-gradient-to-r from-gray-50 to-gray-100 overflow-hidden cursor-pointer">
+        {images.length > 0 ? (
+          <>
+            <img
+              src={getOptimizedImageUrl(images[currentImageIndex])}
+              alt={productName}
+              className={`w-full h-full object-cover transition-all duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
+              onError={handleImageError}
+              loading="lazy"
+            />
+            
+            {imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                <p className="text-gray-500">Image not available</p>
+              </div>
+            )}
+            
+            {/* Image Navigation (only show if multiple images) */}
+            {images.length > 1 && (
+              <>
+                <button 
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-2 shadow-lg hover:bg-opacity-100 transition-all duration-300 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                  aria-label="Previous image"
+                >
+                  <FaChevronLeft className="text-green-700" />
+                </button>
+                <button 
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-2 shadow-lg hover:bg-opacity-100 transition-all duration-300 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                  aria-label="Next image"
+                >
+                  <FaChevronRight className="text-green-700" />
+                </button>
+                
+                {/* Image Indicator Dots */}
+                <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-1">
+                  {images.map((_, index) => (
+                    <span 
+                      key={index}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        index === currentImageIndex ? 'w-6 bg-green-500' : 'w-1.5 bg-white bg-opacity-80'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200">
+            <p className="text-gray-500">No image available</p>
+          </div>
+        )}
+        
+        {/* Discount Badge */}
+        {discount > 0 && (
+          <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md animate-pulse">
+            {discount}% OFF
+          </div>
+        )}
+        
+        {/* View Details Overlay */}
+        <div className={`absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center`}>
+          <motion.button
+            className="bg-white text-green-600 rounded-full p-3 opacity-0 hover:opacity-100 transform scale-90 hover:scale-100 transition-all duration-300"
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1, scale: 1 }}
+            aria-label="View details"
           >
-            {product.stock > 0 ? "In Stock" : "Out of Stock"}
-          </span>
+            <FaEye className="text-lg" />
+          </motion.button>
         </div>
-        <p className="text-gray-600 text-sm">{product.category}</p>
-        <p className="text-gray-700 text-sm line-clamp-2">{product.description}</p>
       </div>
-
-      {/* Price & Actions */}
-      <div className="mt-4 flex justify-between items-center">
-        <span className="text-lg font-bold text-green-600">${product.price}/kg</span>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowForm((show)=>!show)}
-            className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition"
+      
+      <div className="card-body p-5">
+        <h2 className="card-title text-xl font-bold text-gray-800 mb-1 truncate">{productName}</h2>
+        <div className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mb-3">
+          {category}
+        </div>
+        
+        {/* Price Display */}
+        <div className="flex items-baseline mb-3">
+          {discount > 0 ? (
+            <>
+              <span className="text-xl font-bold text-green-600 mr-2">
+                {formatCurrency(discountedPrice)}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
+                {formatCurrency(price)}
+              </span>
+            </>
+          ) : (
+            <span className="text-xl font-bold text-green-600">
+              {formatCurrency(price)}
+            </span>
+          )}
+          <span className="text-xs text-gray-500 ml-1">per kg</span>
+        </div>
+        
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-600">
+            <span className="inline-block w-2 h-2 rounded-full mr-1.5" 
+              style={{backgroundColor: stockQuantity > 10 ? '#10B981' : stockQuantity > 0 ? '#F59E0B' : '#EF4444'}}
+            ></span>
+            <span className="font-medium">{stockQuantity} kg</span> in stock
+          </p>
+        </div>
+        
+        <div className="card-actions justify-end mt-4 space-x-2">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(product);
+            }} 
+            className="btn btn-sm bg-gradient-to-r from-green-500 to-green-600 border-none text-white hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:translate-y-[-2px]"
           >
-            <FaEdit />
+            <FaEdit className="mr-1" /> Edit
           </button>
-          <button
-            onClick={() => onDelete(product.id)}
-            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition"
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(product.id);
+            }} 
+            className="btn btn-sm bg-white border border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-md transform hover:translate-y-[-2px]"
           >
-            <FaTrash />
+            <FaTrash className="mr-1" /> Delete
           </button>
         </div>
       </div>
-    </div>
-    {showForm && <AddProductForm productToEdit={product}/>}
-    </>
+    </motion.div>
   );
 }
 

@@ -12,7 +12,7 @@ const locationData = {
     { id: "balochistan", name: "Balochistan" },
   ],
   cities: {
-    punjab: ["Lahore", "Faisalabad", "Multan", "Rawalpindi"],
+    punjab: ["Lahore", "Faisalabad", "Multan", "Rawalpindi", "Jhelum"],
     sindh: ["Karachi", "Hyderabad", "Sukkur"],
     kpk: ["Peshawar", "Abbottabad", "Mardan"],
     balochistan: ["Quetta", "Gwadar", "Turbat"],

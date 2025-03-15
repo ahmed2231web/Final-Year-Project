@@ -1,18 +1,47 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Button from "../../Components/Common/Button";
-import axios from "axios";
-
-const API_URL = "http://localhost:8000";
+import authService from "../../Services/authService";
+import { toast } from "react-hot-toast";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect to intended page after login
+  const from = location.state?.from || "/";
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          // Check user type and redirect accordingly
+          const userType = await authService.getUserType();
+          if (userType === 'FARMER') {
+            navigate('/farmer/dashboard');
+          } else if (userType === 'CUSTOMER') {
+            navigate('/customer/dashboard');
+          } else if (userType === 'ADMIN') {
+            navigate('/admin/dashboard');
+          } else {
+            navigate('/');
+          }
+        } catch (err) {
+          console.error("Error getting user type:", err);
+          navigate('/');
+        }
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
   const handleChange = (e) => {
     setError("");
@@ -28,25 +57,27 @@ function LoginForm() {
     setError("");
 
     try {
-      const response = await axios.post(
-        `${API_URL}/auth/jwt/create/`,
-        {
-          email: formData.email,
-          password: formData.password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200 && response.data) {
-        localStorage.setItem("accessToken", response.data.access);
-        localStorage.setItem("refreshToken", response.data.refresh);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;
-        setFormData({ email: "", password: "" });
-        window.location.href = "/";
+      // Pass email and password separately to the login function
+      await authService.login(formData.email, formData.password);
+      
+      setFormData({ email: "", password: "" });
+      toast.success("Login successful!");
+      
+      // Dispatch auth state change event
+      window.dispatchEvent(new Event('auth-state-change'));
+      
+      // Get user type and redirect accordingly
+      const userType = await authService.getUserType();
+      console.log("User type:", userType);
+      
+      if (userType === 'FARMER') {
+        navigate('/farmer/dashboard');
+      } else if (userType === 'CUSTOMER') {
+        navigate('/customer/dashboard');
+      } else if (userType === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate(from);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -55,8 +86,10 @@ function LoginForm() {
           .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
           .join("\n");
         setError(errorMessage);
+        toast.error("Login failed. Please check your credentials.");
       } else {
         setError("Failed to login. Please check your credentials and try again.");
+        toast.error("Login failed. Please try again.");
       }
     } finally {
       setIsLoading(false);
