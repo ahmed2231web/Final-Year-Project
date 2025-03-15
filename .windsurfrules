@@ -1,0 +1,34 @@
+# AgroConnect Windsurf Rules
+
+## Code Quality & Best Practices
+- **Clean & Simple Code:** Write code that is easy to read and understand. Avoid unnecessary complexity.
+- **Production Ready:** Code should be robust, secure, and optimized for performance. Follow the DRY (Don't Repeat Yourself) and KISS (Keep It Simple, Stupid) principles.
+- **Well-Commented:** Provide clear inline comments for non-obvious logic and document major architectural decisions.
+
+## Code Formatting
+- **Indentation:** Use 4 spaces per indent level consistently.
+- **Naming Conventions:** 
+  - Use clear and descriptive names for variables, functions, classes, and files.
+  - Follow camelCase for variables/functions and PascalCase for classes.
+- **Whitespace & Separation:** Organize code with proper spacing and line breaks to separate logical blocks.
+
+## Project Architecture
+- **Modular Design:** Organize the project into distinct modules/apps (e.g., accounts, products, orders, communication, administration, ai) to maintain separation of concerns.
+- **Framework Guidelines:** 
+  - Follow Django best practices for models, views, serializers, and URL routing.
+  - Adhere to React best practices for component structure and state management.
+- **Error Handling:** Implement robust error handling with meaningful messages and fallback logic.
+- **Configuration:** Use environment variables for sensitive configurations and external API keys.
+
+## Documentation & Comments
+- **Inline Documentation:** Comment complex sections and functions to explain their purpose and usage.
+- **External Documentation:** Maintain clear README files and architectural documents to support long-term maintainability.
+
+## General Principles
+- Write self-explanatory code and maintain a clean commit history.
+- Review and refactor code regularly to uphold these standards.
+
+
+## Plan
+- Always act as best and professional plan maker and craft a best approach and plan for implementation of the feature that users ask.
+- If that plan approves by user than start implementing that plan

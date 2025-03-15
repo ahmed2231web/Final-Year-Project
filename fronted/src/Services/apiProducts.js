@@ -52,12 +52,50 @@ export async function getProduct() {
 export async function deleteProduct(productId) {
   try {
     const token = authService.getToken();
+    
+    // First, get the product details to access the image URLs
+    const productResponse = await axios.get(`${API_URL}/products/${productId}/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    const product = productResponse.data;
+    console.log('Deleting product with images:', product);
+    
+    // Delete all Cloudinary images associated with the product
+    const imageUrls = [
+      product.imageUrl,
+      product.imageUrl2,
+      product.imageUrl3
+    ].filter(url => url && url.includes('cloudinary.com'));
+    
+    console.log('Found Cloudinary images to delete:', imageUrls);
+    
+    if (imageUrls.length > 0) {
+      // Import the deleteCloudinaryImage function
+      const { deleteCloudinaryImage } = await import('./apiCloudinary');
+      
+      // Delete all images one by one for better error handling
+      for (const url of imageUrls) {
+        try {
+          console.log('Attempting to delete image:', url);
+          await deleteCloudinaryImage(url);
+        } catch (imgError) {
+          console.error(`Failed to delete image ${url}:`, imgError);
+          // Continue with other images even if one fails
+        }
+      }
+    }
+    
+    // Now delete the product from the database
     await axios.delete(`${API_URL}/products/${productId}/`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
     
+    console.log('Product successfully deleted from database');
     return { success: true };
   } catch (error) {
     console.error("Error deleting product:", error);

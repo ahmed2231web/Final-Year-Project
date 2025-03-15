@@ -6,6 +6,11 @@ from .models import Product
 from .serializers import ProductSerializer
 from rest_framework.permissions import IsAuthenticated
 import logging
+import cloudinary
+import cloudinary.uploader
+from rest_framework.views import APIView
+from rest_framework.parsers import JSONParser
+from django.conf import settings
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -78,3 +83,67 @@ class ProductViewSet(viewsets.ModelViewSet):
         related = Product.objects.filter(category=product.category).exclude(id=product.id)[:5]
         serializer = self.get_serializer(related, many=True)
         return Response(serializer.data)
+
+class CloudinaryDeleteView(APIView):
+    """
+    API view for deleting images from Cloudinary.
+    Requires authentication and expects a public_id in the request body.
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser]
+    
+    def post(self, request, format=None):
+        """
+        Delete an image from Cloudinary using its public_id
+        """
+        public_id = request.data.get('public_id')
+        
+        if not public_id:
+            return Response(
+                {"error": "public_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Log the deletion attempt
+            logger.info(f"Attempting to delete Cloudinary image with public_id: {public_id}")
+            
+            # Initialize Cloudinary with credentials from settings
+            cloudinary.config(
+                cloud_name=settings.CLOUDINARY_STORAGE['CLOUD_NAME'],
+                api_key=settings.CLOUDINARY_STORAGE['API_KEY'],
+                api_secret=settings.CLOUDINARY_STORAGE['API_SECRET'],
+                secure=True
+            )
+            
+            # Remove file extension if present (should be handled in frontend but double-check)
+            if '.' in public_id:
+                public_id = public_id.rsplit('.', 1)[0]
+                
+            # Log the cleaned public_id
+            logger.info(f"Using cleaned public_id for deletion: {public_id}")
+            
+            # Delete the image from Cloudinary
+            result = cloudinary.uploader.destroy(public_id)
+            
+            logger.info(f"Cloudinary deletion result: {result}")
+            
+            if result.get('result') == 'ok':
+                logger.info(f"Successfully deleted Cloudinary image: {public_id}")
+                return Response({"success": True}, status=status.HTTP_200_OK)
+            elif result.get('result') == 'not found':
+                # If the image is not found, consider it already deleted
+                logger.warning(f"Cloudinary image not found (already deleted): {public_id}")
+                return Response({"success": True, "message": "Image not found or already deleted"}, status=status.HTTP_200_OK)
+            else:
+                logger.warning(f"Cloudinary deletion returned: {result}")
+                return Response(
+                    {"error": "Image could not be deleted", "details": result},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except Exception as e:
+            logger.error(f"Error deleting Cloudinary image {public_id}: {str(e)}")
+            return Response(
+                {"error": "Failed to delete image", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
