@@ -4,6 +4,8 @@
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
 
 ## 🎯 Project Overview
 AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap between farmers, buyers, and agricultural service providers. Our mission is to revolutionize the agricultural marketplace by providing a seamless, digital platform for trading agricultural products, equipment, and services.
@@ -15,6 +17,8 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - 💬 Real-time chat functionality
 - 📊 Market insights and analytics
 - 🔒 Secure payment integration
+- 🤖 AI-powered crop disease detection and advisory
+- 🌿 Intelligent agricultural chatbot assistant
 
 ## 🛠️ Tech Stack
 
@@ -23,12 +27,15 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - **Database:** PostgreSQL - Reliable data persistence
 - **Authentication:** JWT - Secure user authentication
 - **Language:** Python 3.x - Clean and maintainable codebase
+- **AI Models:** TensorFlow - Deep learning for image classification
+- **LLM Integration:** Google Gemini API - Advanced conversational AI
 
 ### 🎨 Frontend Development
 - **Framework:** React.js - Dynamic and responsive UI
 - **Styling:** Tailwind CSS - Modern and customizable design
 - **Build Tool:** Vite - Lightning-fast development experience
 - **Runtime:** Node.js - Efficient package management
+- **State Persistence:** localStorage - Client-side data persistence
 
 ## 📁 Project Structure
 ```
@@ -37,6 +44,7 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 │   ├── AgroConnect/       # Core Django application
 │   ├── users/             # User management system
 │   ├── products/          # Product management system
+│   ├── ai_chatbot/        # AI chatbot with image disease detection
 │   ├── manage.py         # Django CLI
 │   └── requirements.txt  # Python dependencies
 │
@@ -65,6 +73,13 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - Real-time messaging
 - Notifications system
 - Rating and review system
+
+### 🤖 AI Chatbot & Disease Detection
+- Image-based crop disease detection
+- Intelligent agricultural advisory
+- Persistent chat history across sessions
+- Comprehensive disease information and treatment recommendations
+- User-friendly image preview and selection
 
 ### 📱 Responsive Design
 - Mobile-first approach
@@ -96,6 +111,7 @@ pip install -r requirements.txt
 3. Configure environment:
 - Copy `.env.example` to `.env`
 - Update database and API credentials
+- Add your Google Gemini API key to enable the chatbot
 
 4. Initialize database:
 ```bash
@@ -133,6 +149,7 @@ Access the application at `http://localhost:5173`
   - 🔧 Backend Architecture
   - 📊 Database Design
   - 🔐 API Security
+  - 🤖 AI Integration
 
 - **Sami Ullah** - UI/UX Design Lead
   - 🎨 Interface Design
@@ -151,14 +168,6 @@ We welcome contributions! Here's how you can help:
 3. 💾 Commit changes (`git commit -m 'Add: AmazingFeature'`)
 4. 📤 Push to branch (`git push origin feature/AmazingFeature`)
 5. 🔄 Open a Pull Request
-
-<!-- ## 📄 License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-## 📞 Contact & Support
-- 📧 **Email**: [contact@agroconnect.com](mailto:contact@agroconnect.com)
-- 💬 **Discord**: [Join our community](https://discord.gg/agroconnect)
-- 📱 **Twitter**: [@AgroConnect](https://twitter.com/agroconnect) -->
 
 ## 🌟 Show Your Support
 Give a ⭐️ if this project helped you!
