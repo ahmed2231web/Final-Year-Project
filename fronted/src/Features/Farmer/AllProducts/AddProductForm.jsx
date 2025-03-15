@@ -2,6 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaTimes, FaUpload, FaImage, FaCheck } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 import { createEditProduct } from '../../../Services/apiProducts';
 import InputProduct from "./InputProduct";
 import uploadService from '../../../Services/uploadService';
@@ -221,224 +224,310 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
     if (onFormSubmit) onFormSubmit();
   };
   
+  const removePreview = (index) => {
+    const newPreviewUrls = [...previewUrls];
+    const newSelectedFiles = [...selectedFiles];
+    
+    // Revoke object URL if it's a local file
+    if (newPreviewUrls[index] && !newPreviewUrls[index].startsWith('http')) {
+      URL.revokeObjectURL(newPreviewUrls[index]);
+    }
+    
+    // Remove the preview and file
+    newPreviewUrls.splice(index, 1);
+    newSelectedFiles.splice(index, 1);
+    
+    setPreviewUrls(newPreviewUrls);
+    setSelectedFiles(newSelectedFiles);
+  };
+  
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-6 text-green-700 border-b pb-3">
-          {isEditSession ? 'Edit Product' : 'Add New Product'}
-        </h2>
-        
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Product Name */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-medium text-gray-700">Product Name</span>
-            </label>
-            <input
-              type="text"
-              {...register("productName", { required: "Product name is required" })}
-              className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-              placeholder="Enter product name"
-            />
-            {errors.productName && (
-              <span className="text-red-500 text-sm mt-1">{errors.productName.message}</span>
-            )}
-          </div>
-          
-          {/* Category */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-medium text-gray-700">Category</span>
-            </label>
-            <select 
-              {...register("category", { required: "Category is required" })}
-              className="select select-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+    <AnimatePresence>
+      <motion.div 
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: 'spring', damping: 25 }}
+        >
+          {/* Header */}
+          <div className="relative px-8 py-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-center">
+              <span className="bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
+                {isEditSession ? 'Edit Product' : 'Add New Product'}
+              </span>
+            </h2>
+            <button 
+              onClick={handleCancel}
+              className="absolute right-6 top-6 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Close"
             >
-              <option value="">Select a category</option>
-              <option value="Vegetables">Vegetables</option>
-              <option value="Fruits">Fruits</option>
-              <option value="Crops">Crops</option>
-            </select>
-            {errors.category && (
-              <span className="text-red-500 text-sm mt-1">{errors.category.message}</span>
-            )}
+              <IoClose className="text-gray-600 text-xl" />
+            </button>
           </div>
           
-          {/* Description */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-medium text-gray-700">Description</span>
-            </label>
-            <textarea 
-              {...register("description", { 
-                required: "Description is required",
-                minLength: {
-                  value: 10,
-                  message: "Description should be at least 10 characters"
-                }
-              })}
-              className="textarea textarea-bordered h-24 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-              placeholder="Describe your product..."
-            ></textarea>
-            {errors.description && (
-              <span className="text-red-500 text-sm mt-1">{errors.description.message}</span>
-            )}
-          </div>
-          
-          {/* Price */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-medium text-gray-700">Price (per kg)</span>
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              {...register("price", { 
-                required: "Price is required",
-                min: {
-                  value: 0.01,
-                  message: "Price must be greater than 0"
-                }
-              })}
-              className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-              placeholder="0.00"
-            />
-            {errors.price && (
-              <span className="text-red-500 text-sm mt-1">{errors.price.message}</span>
-            )}
-          </div>
-          
-          {/* Discount */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-medium text-gray-700">Discount (%)</span>
-            </label>
-            <input
-              type="number"
-              {...register("discount", { 
-                min: {
-                  value: 0,
-                  message: "Discount cannot be negative"
-                },
-                max: {
-                  value: 100,
-                  message: "Discount cannot exceed 100%"
-                }
-              })}
-              className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-              placeholder="0"
-            />
-            {errors.discount && (
-              <span className="text-red-500 text-sm mt-1">{errors.discount.message}</span>
-            )}
-          </div>
-          
-          {/* Stock Quantity */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-medium text-gray-700">Stock Quantity (kg)</span>
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              {...register("stockQuantity", { 
-                required: "Stock quantity is required",
-                min: {
-                  value: 0,
-                  message: "Stock cannot be negative"
-                }
-              })}
-              className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-              placeholder="0.00"
-            />
-            {errors.stockQuantity && (
-              <span className="text-red-500 text-sm mt-1">{errors.stockQuantity.message}</span>
-            )}
-          </div>
-          
-          {/* Image Upload */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-medium text-gray-700">Product Images (Up to 3)</span>
-            </label>
-            <div className="flex items-center">
-              <input 
-                type="file" 
-                onChange={handleFileChange}
-                accept="image/*"
-                className="file-input file-input-bordered w-full file-input-success"
-                multiple
-              />
-            </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Select up to 3 images (max 5MB each). Supported formats: JPG, PNG, GIF.
-            </p>
-            {errors.imageUrl && (
-              <span className="text-red-500 text-sm mt-1">{errors.imageUrl.message}</span>
-            )}
-            
-            {/* Image Preview */}
-            {previewUrls.length > 0 && (
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                {previewUrls.map((url, index) => (
-                  <div key={index} className="relative group">
-                    <img 
-                      src={url} 
-                      alt={`Preview ${index + 1}`} 
-                      className="w-full h-28 object-cover rounded-lg border-2 border-green-200 shadow-sm"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
-                      <span className="absolute top-1 right-1 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                        {index + 1}
+          <form onSubmit={handleSubmit(onSubmit)} className="px-8 py-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Product Name */}
+              <div className="form-control w-full md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-1.5">Product Name</label>
+                <input
+                  type="text"
+                  {...register("productName", { required: "Product name is required" })}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                  placeholder="Enter product name"
+                />
+                {errors.productName && (
+                  <span className="text-red-500 text-sm mt-1">{errors.productName.message}</span>
+                )}
+              </div>
+              
+              {/* Category */}
+              <div className="form-control w-full md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-1.5">Category</label>
+                <div className="relative">
+                  <select 
+                    {...register("category", { required: "Category is required" })}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none appearance-none"
+                  >
+                    <option value="">Select a category</option>
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Crops">Crops</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.category && (
+                  <span className="text-red-500 text-sm mt-1">{errors.category.message}</span>
+                )}
+              </div>
+              
+              {/* Description */}
+              <div className="form-control w-full md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-1.5">Description</label>
+                <textarea 
+                  {...register("description", { 
+                    required: "Description is required",
+                    minLength: {
+                      value: 10,
+                      message: "Description should be at least 10 characters"
+                    }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none resize-none"
+                  placeholder="Describe your product..."
+                  rows={4}
+                ></textarea>
+                {errors.description && (
+                  <span className="text-red-500 text-sm mt-1">{errors.description.message}</span>
+                )}
+              </div>
+              
+              {/* Price */}
+              <div className="form-control w-full">
+                <label className="text-sm font-medium text-gray-700 mb-1.5">Price (per kg)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...register("price", { 
+                      required: "Price is required",
+                      min: {
+                        value: 0.01,
+                        message: "Price must be greater than 0"
+                      }
+                    })}
+                    className="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                    placeholder="0.00"
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <span className="text-gray-500">$</span>
+                  </div>
+                </div>
+                {errors.price && (
+                  <span className="text-red-500 text-sm mt-1">{errors.price.message}</span>
+                )}
+              </div>
+              
+              {/* Discount */}
+              <div className="form-control w-full">
+                <label className="text-sm font-medium text-gray-700 mb-1.5">Discount (%)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    {...register("discount", { 
+                      min: {
+                        value: 0,
+                        message: "Discount cannot be negative"
+                      },
+                      max: {
+                        value: 100,
+                        message: "Discount cannot exceed 100%"
+                      }
+                    })}
+                    className="w-full pl-4 pr-8 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                    placeholder="0"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <span className="text-gray-500">%</span>
+                  </div>
+                </div>
+                {errors.discount && (
+                  <span className="text-red-500 text-sm mt-1">{errors.discount.message}</span>
+                )}
+              </div>
+              
+              {/* Stock Quantity */}
+              <div className="form-control w-full md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-1.5">Stock Quantity (kg)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register("stockQuantity", { 
+                    required: "Stock quantity is required",
+                    min: {
+                      value: 0,
+                      message: "Stock cannot be negative"
+                    }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                  placeholder="0.00"
+                />
+                {errors.stockQuantity && (
+                  <span className="text-red-500 text-sm mt-1">{errors.stockQuantity.message}</span>
+                )}
+              </div>
+              
+              {/* Image Upload */}
+              <div className="form-control w-full md:col-span-2 mt-2">
+                <label className="text-sm font-medium text-gray-700 mb-1.5">Product Images (Up to 3)</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition-all bg-gray-50">
+                  <input 
+                    type="file" 
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                    id="product-images"
+                    multiple
+                  />
+                  <label htmlFor="product-images" className="cursor-pointer">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <FaUpload className="text-green-500 text-2xl" />
+                      <span className="text-gray-700 font-medium">Click to upload images</span>
+                      <span className="text-gray-500 text-sm">or drag and drop</span>
+                      <span className="text-xs text-gray-400 mt-1">
+                        Max 3 images (5MB each) - JPG, PNG, GIF
                       </span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Upload Progress */}
-            {isUploading && uploadProgress > 0 && (
-              <div className="mt-3">
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="bg-green-600 h-2.5 rounded-full transition-all duration-300" 
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
+                  </label>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}% uploaded</p>
+                
+                {/* Image Preview */}
+                {previewUrls.length > 0 && (
+                  <div className="mt-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      {previewUrls.map((url, index) => (
+                        <motion.div 
+                          key={index} 
+                          className="relative group rounded-xl overflow-hidden shadow-sm border-2 border-green-100"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <img 
+                            src={url} 
+                            alt={`Preview ${index + 1}`} 
+                            className="w-full h-28 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+                            <motion.button
+                              type="button"
+                              onClick={() => removePreview(index)}
+                              className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <FaTimes className="text-red-500 text-xs" />
+                            </motion.button>
+                            <span className="absolute bottom-1 left-1 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              {index + 1}
+                            </span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Upload Progress */}
+                {isUploading && uploadProgress > 0 && (
+                  <div className="mt-4">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <motion.div 
+                        className="bg-green-600 h-2 rounded-full" 
+                        style={{ width: `${uploadProgress}%` }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${uploadProgress}%` }}
+                        transition={{ duration: 0.3 }}
+                      ></motion.div>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-xs text-gray-500">Uploading images...</p>
+                      <p className="text-xs font-medium text-green-600">{uploadProgress}%</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-4 mt-8 border-t pt-4">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="btn btn-outline border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600"
-              disabled={isWorking}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn bg-green-600 hover:bg-green-700 text-white border-none"
-              disabled={isWorking}
-            >
-              {isWorking ? (
-                <>
-                  <span className="loading loading-spinner"></span>
-                  {isUploading ? 'Uploading...' : (isEditSession ? 'Updating...' : 'Creating...')}
-                </>
-              ) : (
-                isEditSession ? 'Update Product' : 'Add Product'
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 mt-8 pt-4 border-t border-gray-100">
+              <motion.button
+                type="button"
+                onClick={handleCancel}
+                className="px-6 py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isWorking}
+              >
+                Cancel
+              </motion.button>
+              <motion.button
+                type="submit"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isWorking}
+              >
+                {isWorking ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {isUploading ? 'Uploading...' : (isEditSession ? 'Updating...' : 'Creating...')}
+                  </>
+                ) : (
+                  <>
+                    <FaCheck className="text-sm" />
+                    {isEditSession ? 'Update Product' : 'Add Product'}
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
