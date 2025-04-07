@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import RegexValidator
+from django.utils import timezone
 
 import shortuuid
 
@@ -145,3 +146,45 @@ class CustomUser(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
+
+# News Article model for the platform
+class NewsArticle(models.Model):
+    """
+    Model to store news articles that will be displayed to farmers
+    """
+    CATEGORY_CHOICES = [
+        ('farming_techniques', 'Farming Techniques'),
+        ('government', 'Government'),
+        ('climate', 'Climate'),
+        ('technology', 'Technology'),
+        ('sustainability', 'Sustainability'),
+        ('general', 'General'),
+    ]
+    
+    title = models.CharField(max_length=255, help_text="Title of the news article")
+    description = models.TextField(help_text="Brief description or summary of the article")
+    image = models.ImageField(upload_to='news_images/', help_text="Featured image for the article")
+    article_url = models.URLField(help_text="External link to the original article")
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='general')
+    
+    # Field to control visibility of the article
+    is_active = models.BooleanField(default=True, help_text="Whether the article is visible to users")
+    
+    # Added timestamps for internal tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'News Article'
+        verbose_name_plural = 'News Articles'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.title
+        
+    @property
+    def image_url(self):
+        """Return the complete URL for the image"""
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
+        return None

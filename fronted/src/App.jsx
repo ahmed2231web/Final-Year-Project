@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "react-hot-toast";
 import AppLayout from "./Layouts/AppLayout";
 import FarmerLayout from "./Layouts/FarmerLayout";
+import CustomerLayout from "./Layouts/CustomerLayout";
 import Home from "./Pages/Landing/Home";
 import AboutUs from "./Pages/Landing/AboutUs";
 import ContactUs from "./Pages/Landing/ContactUs";
@@ -20,11 +21,17 @@ import Products from "./Features/Farmer/AllProducts/Products";
 import CloudinaryTest from './Features/Farmer/AllProducts/CloudinaryTest';
 import CloudinaryTestSimple from './Features/Farmer/AllProducts/CloudinaryTestSimple';
 import EnvTest from './Features/Farmer/AllProducts/EnvTest';
-import ChatComponent from "./Features/Farmer/Chats/ChatComponent";
-import SidebarChat from "./Features/Farmer/Chats/SidebarChat";
 import Chatbot from "./Features/Farmer/Chatbot";
-import Notifications from "./Features/Farmer/Notifications";
+import FarmerNews from "./Features/Farmer/News/FarmerNews";
 import ProtectedFarmerRoute from "./Components/Common/ProtectedRoute";
+import ProtectedCustomerRoute from "./Components/Common/ProtectedCustomerRoute";
+import CustomerDashboard from "./Features/Customer/Dashboard/CustomerDashboard";
+import CustomerChatbotPage from "./Features/Customer/Chatbot/CustomerChatbotPage";
+
+import CustomerChatList from "./Features/Customer/Chat/CustomerChatList";
+import CustomerChatRoom from "./Features/Customer/Chat/CustomerChatRoom";
+import FarmerChatList from "./Features/Farmer/Chat/FarmerChatList";
+import FarmerChatRoom from "./Features/Farmer/Chat/FarmerChatRoom";
 
 import ActivationPending from "./Components/Forms/ActivationPending";
 import ActivateAccount from "./Components/Forms/ActivateAccount";
@@ -122,24 +129,51 @@ const router = createBrowserRouter([
         element: <Products />,
       },
       {
-      path: "chatbot",
-      element: <Chatbot/>,
+        path: "chat",
+        element: <FarmerChatList />,
       },
       {
-        path: "notifications",
-        element: <Notifications/>
+        path: "chat/:roomId",
+        element: <FarmerChatRoom />,
+      },
+      {
+        path: "chatbot",
+        element: <Chatbot/>,
+      },
+      {
+        path: "news",
+        element: <FarmerNews />,
+      },
+      {
+        path: "news/:newsId", // Display the news for a specific newsId
+        element: <FarmerNews />,
+      },
+    ],
+  },
+  {
+    path: "/customer", // Route for Customer Dashboard
+    element: <ProtectedCustomerRoute><CustomerLayout /></ProtectedCustomerRoute>,
+    children: [
+      {
+        index: true, // This makes it the default route for /customer
+        element: <CustomerDashboard />,
+      },
+      {
+        path: "dashboard",
+        element: <CustomerDashboard />,
       },
       {
         path: "chat",
-        element: <SidebarChat />, // Display the list of customers
-        children: [
-          {
-            path: ":customerId", // Display the chat for a specific customer
-            element: <ChatComponent session={{ user: { id: "00000000-0000-0000-0000-000000000000" } }} />,
-          },
-        ],
+        element: <CustomerChatList />,
       },
-      
+      {
+        path: "chat/:roomId",
+        element: <CustomerChatRoom />,
+      },
+      {
+        path: "chatbot",
+        element: <CustomerChatbotPage />,
+      },
     ],
   },
 ]);

@@ -1,0 +1,18 @@
+1) Implement a chat alignment feature similar to WhatsApp, where messages sent by the user appear on the right side of the chat window, and received messages are displayed on the left. This alignment should enhance user experience and make conversations clearer. Please ensure this feature is prioritized, as it has been previously discussed multiple times.
+
+
+2) Also Update Farmer dashboard on order receiving when order came show notification also show in farmer dashboard with status new order also add blinking small light infront of that order at the left side of order id when message first time when user click on that through dashboard or through notification or directly goes to chat change that to active orders automatically and add option when user manaually select on option or tick button to click after farmer click on tick button move that order row downword show most recent came order at first with time also how minutes goes this order came also add logic when user remove click on completed order also bring upward that order but beloow the most recent ones
+
+
+
+3) When farmer is in http://localhost:5173/farmer/chat / the customer send him message it have to refresh the page to recive it how to show message automatically without farmer have to refresh
+
+4) Add edit profile option for both ( optional )
+
+5) Improve little bit UI make it more responsive add more responsive logic in UI
+
+6) Also why email goes of Your account is active
+
+7) I asked you not to add two image selecting option here but to show all the images that farmer upload to customer product card that in which user is customer is seeing products. so remove two image selecing option from the chat UI.
+
+8) Remove some tables from db also 

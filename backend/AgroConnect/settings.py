@@ -28,8 +28,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
-    "admin_interface",  # Django admin interface customization
-    "colorfield",  # Color field for admin interface
+    # 'admin_interface',  # Django admin interface customization
+    # 'colorfield',  # Color field for admin interface
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'channels',  # Django Channels for WebSockets
 
     # cloudinary for image storing
     'cloudinary',
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     'users',
     'products',
     'ai_chatbot',
+    'chat'
 ]
 
 MIDDLEWARE = [
@@ -70,6 +72,18 @@ ROOT_URLCONF = 'AgroConnect.urls'
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 FRONTEND_DOMAIN = getenv("FRONTEND_DOMAIN")
 
@@ -93,6 +107,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'AgroConnect.wsgi.application'
+ASGI_APPLICATION = 'AgroConnect.asgi.application'
 
 
 # Database
@@ -161,10 +176,16 @@ STATIC_URL = 'static/'
 
 STATIC_ROOT = BASE_DIR / 'static_root'
 
+# Media files (User uploaded files)
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Base URL for absolute URLs
+BASE_URL = 'http://localhost:8000'
 
 # Use Cloudinary storage for media files
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 
 
@@ -172,7 +193,6 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 
 # Custom user model for the application. Points to the CustomUser model in the users app.
@@ -238,7 +258,7 @@ DJOSER = {
         
     # When True, adds used refresh tokens to blacklist after rotation
     # Prevents reuse of old refresh tokens, improving security
-    "BLACKLIST_AFTER_ROTATION": True,
+    # "BLACKLIST_AFTER_ROTATION": True,
         
     # When False, doesn't update last login timestamp
     # Can improve performance by reducing database writes
@@ -258,6 +278,18 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Security settings - X-Frame-Options
 # SAMEORIGIN allows the page to be displayed in a frame on the same origin as the page itself
-X_FRAME_OPTIONS = "SAMEORIGIN"
+# X_FRAME_OPTIONS = "SAMEORIGIN"
 # Silencing specific security checks - W019 relates to X-Frame-Options
-SILENCED_SYSTEM_CHECKS = ["security.W019"]
+# SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+# Channel layers for Django Channels
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        # For production, use a Redis backend
+        # 'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        # 'CONFIG': {
+        #     "hosts": [('127.0.0.1', 6379)],
+        # },
+    },
+}

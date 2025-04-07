@@ -121,7 +121,7 @@ function ProductCard({ product, onEdit, onDelete, onView }) {
         
         {/* Discount Badge */}
         {discount > 0 && (
-          <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md animate-pulse">
+          <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
             {discount}% OFF
           </div>
         )}

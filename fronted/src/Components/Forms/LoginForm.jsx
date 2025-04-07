@@ -27,6 +27,7 @@ function LoginForm() {
           if (userType === 'FARMER') {
             navigate('/farmer/dashboard');
           } else if (userType === 'CUSTOMER') {
+            // Redirect customers to customer dashboard
             navigate('/customer/dashboard');
           } else if (userType === 'ADMIN') {
             navigate('/admin/dashboard');
@@ -73,6 +74,7 @@ function LoginForm() {
       if (userType === 'FARMER') {
         navigate('/farmer/dashboard');
       } else if (userType === 'CUSTOMER') {
+        // Redirect customers to customer dashboard
         navigate('/customer/dashboard');
       } else if (userType === 'ADMIN') {
         navigate('/admin/dashboard');

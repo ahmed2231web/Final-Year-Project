@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import CustomUser  # Import the CustomUser model from the current directory
+from django.utils.html import format_html
+from .models import CustomUser, NewsArticle  # Import the CustomUser and NewsArticle models
 
 class UserModelAdmin(BaseUserAdmin):
     """
@@ -66,6 +67,36 @@ class UserModelAdmin(BaseUserAdmin):
     filter_horizontal = ()
     # Specifies that no fields should use the horizontal filter widget in the admin interface.
 
-# Register the CustomUser model with the admin interface
+class NewsArticleAdmin(admin.ModelAdmin):
+    """
+    Custom admin configuration for the NewsArticle model.
+    Provides a user-friendly interface for managing news articles.
+    """
+    list_display = ('title', 'category', 'is_active', 'display_image', 'article_link')
+    list_filter = ('category', 'is_active')
+    search_fields = ('title', 'description')
+    
+    fieldsets = (
+        ('Article Content', {
+            'fields': ('title', 'description', 'image', 'article_url', 'category')
+        }),
+        ('Settings', {
+            'fields': ('is_active',)
+        }),
+    )
+    
+    def display_image(self, obj):
+        """Display a thumbnail of the image in the admin list view"""
+        if obj.image:
+            return format_html('<img src="{}" width="50" height="50" style="object-fit: cover;" />', obj.image.url)
+        return "No Image"
+    display_image.short_description = 'Image'
+    
+    def article_link(self, obj):
+        """Display a clickable link to the original article"""
+        return format_html('<a href="{}" target="_blank">View Source</a>', obj.article_url)
+    article_link.short_description = 'Article Link'
+
+# Register the CustomUser and NewsArticle models with the admin interface
 admin.site.register(CustomUser, UserModelAdmin)
-# Registers the CustomUser model with the admin interface using the custom UserModelAdmin configuration.
+admin.site.register(NewsArticle, NewsArticleAdmin)

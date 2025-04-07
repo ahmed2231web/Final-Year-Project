@@ -9,12 +9,25 @@ import authService from '../../Services/authService';
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userType, setUserType] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user is authenticated using authService
-    const checkAuthStatus = () => {
-      setIsAuthenticated(authService.isAuthenticated());
+    const checkAuthStatus = async () => {
+      const isAuth = authService.isAuthenticated();
+      setIsAuthenticated(isAuth);
+      
+      if (isAuth) {
+        try {
+          const type = await authService.getUserType();
+          setUserType(type);
+        } catch (error) {
+          console.error("Error getting user type:", error);
+        }
+      } else {
+        setUserType(null);
+      }
     };
     
     // Check authentication status initially
@@ -38,6 +51,7 @@ function Header() {
     
     // Update authentication state
     setIsAuthenticated(false);
+    setUserType(null);
     
     // Dispatch auth state change event
     window.dispatchEvent(new Event('auth-state-change'));
@@ -45,6 +59,31 @@ function Header() {
     // Navigate to home page
     navigate('/');
   };
+
+  // Navigation links for public pages
+  const publicLinks = [
+    { to: "/", label: "Home" },
+    { to: "/about", label: "About" },
+    { to: "/contact", label: "Contact" },
+    { to: "/faq", label: "FAQs" },
+    { to: "/privacypolicy", label: "Privacy Policy" },
+    { to: "/termsandconditions", label: "Terms and Conditions" }
+  ];
+
+  // Navigation links for authenticated users
+  const getDashboardLink = () => {
+    if (!isAuthenticated) return null;
+    
+    if (userType === 'farmer') {
+      return { to: "/farmer/dashboard", label: "Farmer Dashboard" };
+    } else if (userType === 'customer') {
+      return { to: "/customer/dashboard", label: "Customer Dashboard" };
+    }
+    
+    return null;
+  };
+
+  const dashboardLink = getDashboardLink();
 
   return (
     <nav className="bg-[#0A690E] shadow-lg w-full z-50">
@@ -79,42 +118,26 @@ function Header() {
 
           {/* Links for Large Screens (Above 840px) */}
           <div className="hidden lg:flex space-x-4">
-          <NavLink
-              to="/"
-              className="text-white hover:text-yellow-400 transition duration-300 hover:scale-[1.1] px-3 py-2"
-              style={({ isActive }) => (isActive ? { color: 'yellow' } : {})}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/about"
-              className="text-white hover:text-yellow-400 transition duration-300 hover:scale-[1.1] px-3 py-2"
-              style={({ isActive }) => (isActive ? { color: 'yellow' } : {})}
-            >
-              About
-            </NavLink>
-            <NavLink
-                to="/faq"
+            {publicLinks.map(link => (
+              <NavLink
+                key={link.to}
+                to={link.to}
                 className="text-white hover:text-yellow-400 transition duration-300 hover:scale-[1.1] px-3 py-2"
                 style={({ isActive }) => (isActive ? { color: 'yellow' } : {})}
               >
-                FAQs
+                {link.label}
               </NavLink>
+            ))}
             
+            {dashboardLink && (
               <NavLink
-              to="/termsandconditions"
-              className="text-white hover:text-yellow-400 transition duration-300 hover:scale-[1.1] px-3 py-2"
+                to={dashboardLink.to}
+                className="text-white hover:text-yellow-400 transition duration-300 hover:scale-[1.1] px-3 py-2"
                 style={({ isActive }) => (isActive ? { color: 'yellow' } : {})}
-            >
-              Terms and Conditions
-            </NavLink>
-            <NavLink
-              to="/contact"
-              className="text-white hover:text-yellow-400 transition duration-300 hover:scale-[1.1] px-3 py-2"
-                style={({ isActive }) => (isActive ? { color: 'yellow' } : {})}
-            >
-              Contact
-            </NavLink>
+              >
+                {dashboardLink.label}
+              </NavLink>
+            )}
           </div>
 
           {/* Dropdown Menu for Small to Medium Screens */}
@@ -123,46 +146,40 @@ function Header() {
               className="absolute top-16 left-4 bg-white shadow-md rounded-md w-48 py-2 lg:hidden z-50"
               onClick={(e) => e.stopPropagation()}
             >
-              <NavLink
-                to="/"
-                className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
-                onClick={() => setMenuOpen(false)}
-              >
-                Home
-              </NavLink>
-              <NavLink
-                to="/about"
-                className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
-                onClick={() => setMenuOpen(false)}
-              >
-                About
-              </NavLink>
-              <NavLink
-                to="/faq"
-                className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
-                onClick={() => setMenuOpen(false)}
-              >
-                FAQs
-              </NavLink>
-              <NavLink
-                to="/termsandconditions"
-                className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
-                onClick={() => setMenuOpen(false)}
-              >
-                Terms and Conditions
-              </NavLink>
-              <NavLink
-                to="/contact"
-                className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
-                onClick={() => setMenuOpen(false)}
-              >
-                Contact
-              </NavLink>
+              {publicLinks.map(link => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+              
+              {dashboardLink && (
+                <NavLink
+                  to={dashboardLink.to}
+                  className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {dashboardLink.label}
+                </NavLink>
+              )}
             </div>
           )}
 
           {/* Auth Button */}
           <div className="flex items-center space-x-4">
+            {isAuthenticated && (
+              <Button
+                to={userType === 'farmer' ? "/farmer/dashboard" : "/customer/dashboard"}
+                variant="button"
+                className="bg-yellow-400 text-stone-800 hover:bg-yellow-300 focus:bg-yellow-300 focus:ring-yellow-300 mr-2"
+              >
+                Dashboard
+              </Button>
+            )}
             {isAuthenticated ? (
               <Button
                 onClick={handleLogout}

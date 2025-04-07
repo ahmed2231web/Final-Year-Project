@@ -5,9 +5,14 @@ import { toast } from "react-hot-toast";
 import "../../Components/Chatbot/Chatbot.css";
 
 function Chatbot() {
-  // Load messages from localStorage on initial render
+  // Get user ID from localStorage (stored during login)
+  const userId = localStorage.getItem('userId') || 'guest';
+  const chatStorageKey = `farmer_chat_${userId}`;
+  const diseaseStorageKey = `farmer_disease_${userId}`;
+  
+  // Load messages from localStorage on initial render with user-specific key
   const [messages, setMessages] = useState(() => {
-    const savedMessages = localStorage.getItem('chatMessages');
+    const savedMessages = localStorage.getItem(chatStorageKey);
     return savedMessages ? JSON.parse(savedMessages) : [
       { text: "Hello! How can I help you?", isBot: true }
     ];
@@ -17,9 +22,9 @@ function Chatbot() {
   const [image, setImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Load detected disease from localStorage
+  // Load detected disease from localStorage with user-specific key
   const [detectedDisease, setDetectedDisease] = useState(() => {
-    return localStorage.getItem('detectedDisease') || null;
+    return localStorage.getItem(diseaseStorageKey) || null;
   });
   
   const messagesEndRef = useRef(null);
@@ -31,17 +36,17 @@ function Chatbot() {
     scrollToBottom();
   }, [messages]);
   
-  // Save messages to localStorage whenever they change
+  // Save messages to localStorage whenever they change with user-specific key
   useEffect(() => {
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
-  }, [messages]);
+    localStorage.setItem(chatStorageKey, JSON.stringify(messages));
+  }, [messages, chatStorageKey]);
   
-  // Save detected disease to localStorage whenever it changes
+  // Save detected disease to localStorage whenever it changes with user-specific key
   useEffect(() => {
     if (detectedDisease) {
-      localStorage.setItem('detectedDisease', detectedDisease);
+      localStorage.setItem(diseaseStorageKey, detectedDisease);
     }
-  }, [detectedDisease]);
+  }, [detectedDisease, diseaseStorageKey]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -242,8 +247,9 @@ function Chatbot() {
   const clearChatHistory = () => {
     setMessages([{ text: "Hello! How can I help you?", isBot: true }]);
     setDetectedDisease(null);
-    localStorage.removeItem('chatMessages');
-    localStorage.removeItem('detectedDisease');
+    localStorage.removeItem(chatStorageKey);
+    localStorage.removeItem(diseaseStorageKey);
+    toast.success("Chat history cleared");
   };
 
   return (
@@ -353,10 +359,10 @@ function Chatbot() {
             type="file"
             ref={fileInputRef}
             onChange={handleImageUpload}
-            className="hidden"
             accept="image/*"
-            key={image ? "reset" : "default"} // Force re-render of input when image is cleared
+            className="hidden"
           />
+          
           <input
             type="text"
             value={inputMessage}
@@ -365,9 +371,14 @@ function Chatbot() {
             className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             disabled={isLoading}
           />
+          
           <button
             type="submit"
-            className="p-2 rounded-full bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+            className={`p-2 rounded-full ${
+              isLoading || (!inputMessage.trim() && !image)
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-green-500 text-white hover:bg-green-600"
+            }`}
             disabled={isLoading || (!inputMessage.trim() && !image)}
           >
             <Send className="h-5 w-5" />

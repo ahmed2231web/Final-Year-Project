@@ -4,7 +4,7 @@ import authService from './authService';
 // Get Cloudinary configuration from environment variables
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-const API_URL = 'http://localhost:8000/api';
+const API_URL = `${import.meta.env.VITE_BACKEND_DOMAIN}/api`;
 
 /**
  * Upload a single image to Cloudinary

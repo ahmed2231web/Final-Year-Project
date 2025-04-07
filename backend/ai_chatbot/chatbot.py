@@ -17,7 +17,7 @@ def get_gemini_response(disease, user_query=None):
     )
     
     # Specify the model
-    model = "gemini-2.0-pro-exp-02-05"
+    model = "gemini-2.0-flash"
     
     # Create the prompt based on whether there's a user query or not
     if user_query:
@@ -42,7 +42,7 @@ def get_gemini_response(disease, user_query=None):
     
     # Configure generation parameters
     generate_content_config = types.GenerateContentConfig(
-        temperature=1,
+        temperature=0,
         top_p=0.95,
         top_k=64,
         max_output_tokens=8192,

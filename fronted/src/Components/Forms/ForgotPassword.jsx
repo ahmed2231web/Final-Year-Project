@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// Base URL for API requests
+const API_URL = import.meta.env.VITE_BACKEND_DOMAIN;
+
 // Helper function to get a cookie by name
 function getCookie(name) {
   let cookieValue = null;
@@ -31,7 +34,7 @@ const ForgotPassword = () => {
     const csrfToken = getCookie("csrftoken");
     
     try {
-      await axios.post('http://localhost:8000/auth/user/password-reset/request/', 
+      await axios.post(`${API_URL}/auth/user/password-reset/request/`, 
         { email },
         {
           headers: {

@@ -1,7 +1,8 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_URL = 'http://localhost:8000/api';
+// Base URL for API requests
+const API_URL = `${import.meta.env.VITE_BACKEND_DOMAIN}/api`;
 
 export async function createEditProduct(product, id) {
   const token = authService.getToken();

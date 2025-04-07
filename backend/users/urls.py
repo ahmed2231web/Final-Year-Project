@@ -6,6 +6,7 @@ from .views import (
     PasswordResetRequestView,
     FarmerAuthCheckView,
     UserTypeView,
+    NewsArticleListView,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -25,6 +26,9 @@ urlpatterns = [
     # Auth check endpoints
     path('user/check-farmer/', FarmerAuthCheckView.as_view(), name='check-farmer-auth'),
     path('user/user-type/', UserTypeView.as_view(), name='get-user-type'),
+    
+    # News Articles endpoint
+    path('news/', NewsArticleListView.as_view(), name='news-articles'),
     
     # JWT endpoints
     path('jwt/create/', TokenObtainPairView.as_view(), name='token-obtain-pair'),

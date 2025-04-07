@@ -1,6 +1,9 @@
 from djoser.serializers import UserCreateSerializer
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from .models import NewsArticle
+import os
+import base64
 
 User = get_user_model() 
 
@@ -58,3 +61,38 @@ class UserDetailSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'phone_number', 'email', 'full_name', 'user_type', 'province', 'city', 'date_joined')
         read_only_fields = ('id', 'date_joined')
+
+class NewsArticleSerializer(serializers.ModelSerializer):
+    """Serializer for NewsArticle model"""
+    image_data = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = NewsArticle
+        fields = ('id', 'title', 'description', 'image', 'image_url', 'image_data', 'article_url', 'category', 'is_active', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'created_at')
+    
+    def get_image_url(self, obj):
+        """Return the full image URL including domain"""
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+    
+    def get_image_data(self, obj):
+        """Return base64 encoded image data if the image exists"""
+        if not obj.image:
+            return None
+            
+        try:
+            if os.path.exists(obj.image.path):
+                with open(obj.image.path, 'rb') as image_file:
+                    encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+                    return f"data:image/{obj.image.name.split('.')[-1]};base64,{encoded_image}"
+        except Exception as e:
+            print(f"Error encoding image: {e}")
+            return None
+        
+        return None

@@ -13,6 +13,11 @@ const ProtectedFarmerRoute = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
+    // Save current location for restoration after server restart
+    if (location.pathname.startsWith('/farmer')) {
+      authService.saveCurrentPage(location.pathname);
+    }
+
     // First check if we have a token
     console.log('ProtectedFarmerRoute: Checking authentication');
     console.log('Current path:', location.pathname);

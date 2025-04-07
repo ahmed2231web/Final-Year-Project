@@ -10,6 +10,7 @@ import cloudinary.uploader
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
 from django.conf import settings
+from rest_framework.exceptions import PermissionDenied
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -51,27 +52,58 @@ class ProductViewSet(viewsets.ModelViewSet):
             logger.error(f"Error creating product: {str(e)}")
             raise
     
+    def perform_destroy(self, instance):
+        """
+        Custom perform_destroy method to handle product deletion
+        """
+        # Check if the user has permission to delete this product
+        if instance.farmer != self.request.user:
+            logger.warning(f"User {self.request.user.email} attempted to delete product {instance.id} without permission")
+            # We can't return a Response from perform_destroy, so we raise an exception
+
+            raise PermissionDenied("You do not have permission to delete this product.")
+        
+        # Log the deletion
+        logger.info(f"Product {instance.id} deleted by user {self.request.user.email}")
+        
+        # Call the parent's perform_destroy to actually delete the instance
+        super().perform_destroy(instance)
+    
     def destroy(self, request, *args, **kwargs):
         """
-        Only allow farmers to delete their own products
+        Override destroy to add custom error handling
         """
-        instance = self.get_object()
-        if instance.farmer != request.user:
-            return Response(
-                {"detail": "You do not have permission to delete this product."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         try:
-            response = super().destroy(request, *args, **kwargs)
-            logger.info(f"Product {instance.id} deleted by user {request.user.email}")
-            return response
+            return super().destroy(request, *args, **kwargs)
         except Exception as e:
-            logger.error(f"Error deleting product {instance.id}: {str(e)}")
+            if isinstance(e, permissions.exceptions.PermissionDenied):
+                # Re-raise permission errors to be handled by DRF
+                raise
+            
+            # Log and handle other errors
+            logger.error(f"Error deleting product: {str(e)}")
             return Response(
                 {"detail": f"Error deleting product: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    @action(detail=False, methods=['get'])
+    def all(self, request):
+        """
+        Get all products for customer display, regardless of farmer
+        This endpoint is used by customers to browse all available products
+        """
+        # Get all products
+        products = Product.objects.all().order_by('-created_at')
+        
+        # Include farmer information in the serialized data
+        serializer = self.get_serializer(products, many=True)
+        
+        # Log the request
+        logger.info(f"All products requested by user {request.user.email}")
+        
+        # Return the serialized data
+        return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
     def related_products(self, request, pk=None):
@@ -79,8 +111,14 @@ class ProductViewSet(viewsets.ModelViewSet):
         Get related products with the same category
         """
         product = self.get_object()
+        
+        # Find related products with the same category
         related = Product.objects.filter(category=product.category).exclude(id=product.id)[:5]
+        
+        # Serialize the related products
         serializer = self.get_serializer(related, many=True)
+        
+        # Return the serialized data
         return Response(serializer.data)
 
 class CloudinaryDeleteView(APIView):
@@ -95,54 +133,33 @@ class CloudinaryDeleteView(APIView):
         """
         Delete an image from Cloudinary using its public_id
         """
-        public_id = request.data.get('public_id')
-        
-        if not public_id:
-            return Response(
-                {"error": "public_id is required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
         try:
-            # Log the deletion attempt
-            logger.info(f"Attempting to delete Cloudinary image with public_id: {public_id}")
+            # Get the public_id from the request body
+            public_id = request.data.get('public_id')
             
-            # Initialize Cloudinary with credentials from settings
-            cloudinary.config(
-                cloud_name=settings.CLOUDINARY_STORAGE['CLOUD_NAME'],
-                api_key=settings.CLOUDINARY_STORAGE['API_KEY'],
-                api_secret=settings.CLOUDINARY_STORAGE['API_SECRET'],
-                secure=True
-            )
-            
-            # Remove file extension if present (should be handled in frontend but double-check)
-            if '.' in public_id:
-                public_id = public_id.rsplit('.', 1)[0]
-                
-            # Log the cleaned public_id
-            logger.info(f"Using cleaned public_id for deletion: {public_id}")
-            
-            # Delete the image from Cloudinary
-            result = cloudinary.uploader.destroy(public_id)
-            
-            logger.info(f"Cloudinary deletion result: {result}")
-            
-            if result.get('result') == 'ok':
-                logger.info(f"Successfully deleted Cloudinary image: {public_id}")
-                return Response({"success": True}, status=status.HTTP_200_OK)
-            elif result.get('result') == 'not found':
-                # If the image is not found, consider it already deleted
-                logger.warning(f"Cloudinary image not found (already deleted): {public_id}")
-                return Response({"success": True, "message": "Image not found or already deleted"}, status=status.HTTP_200_OK)
-            else:
-                logger.warning(f"Cloudinary deletion returned: {result}")
+            if not public_id:
                 return Response(
-                    {"error": "Image could not be deleted", "details": result},
+                    {"detail": "Public ID is required"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            
+            # Delete the image from Cloudinary
+            result = cloudinary.uploader.destroy(
+                public_id,
+                api_key=settings.CLOUDINARY_API_KEY,
+                api_secret=settings.CLOUDINARY_API_SECRET,
+                cloud_name=settings.CLOUDINARY_CLOUD_NAME
+            )
+            
+            # Log the deletion
+            logger.info(f"Image {public_id} deleted by user {request.user.email}")
+            
+            # Return the result
+            return Response(result)
+            
         except Exception as e:
-            logger.error(f"Error deleting Cloudinary image {public_id}: {str(e)}")
+            logger.error(f"Error deleting image from Cloudinary: {str(e)}")
             return Response(
-                {"error": "Failed to delete image", "details": str(e)},
+                {"detail": f"Error deleting image: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

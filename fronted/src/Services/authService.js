@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base URL for API requests
-const API_URL = 'http://localhost:8000/auth';
+const API_URL = `${import.meta.env.VITE_BACKEND_DOMAIN}/auth`;
 
 // In-memory storage for user data
 let userData = null;
@@ -19,6 +19,31 @@ const getStoredRefreshToken = () => {
   return token;
 };
 
+// Save and retrieve last visited page
+const saveLastVisitedPage = (path) => {
+  if (path && !path.includes('/login') && !path.includes('/signup')) {
+    localStorage.setItem('last_visited_page', path);
+    console.log('Saved last visited page:', path);
+  }
+};
+
+const getLastVisitedPage = () => {
+  const page = localStorage.getItem('last_visited_page');
+  console.log('Retrieved last visited page:', page);
+  return page || '/farmer/dashboard'; // Default to dashboard if no page is saved
+};
+
+// Get the appropriate redirect path based on user type
+const getRedirectPathForUserType = (userType) => {
+  if (userType === 'FARMER') {
+    return '/farmer/dashboard';
+  } else if (userType === 'CUSTOMER') {
+    return '/customer'; // Redirect customers to customer dashboard
+  } else {
+    return '/';
+  }
+};
+
 /**
  * Service for authentication-related API calls
  */
@@ -31,6 +56,16 @@ const authService = {
     const isFarmer = userData && userData.user_type === 'FARMER';
     console.log('Checking farmer auth:', isFarmer ? 'Is farmer' : 'Not a farmer', userData);
     return isFarmer;
+  },
+
+  /**
+   * Check if the user is authenticated and is a customer
+   * @returns {boolean} True if the user is authenticated and is a customer
+   */
+  checkCustomerAuth: () => {
+    const isCustomer = userData && userData.user_type === 'CUSTOMER';
+    console.log('Checking customer auth:', isCustomer ? 'Is customer' : 'Not a customer', userData);
+    return isCustomer;
   },
 
   /**
@@ -109,6 +144,9 @@ const authService = {
         userData = userResponse.data;
         console.log('login: User data received:', userData);
         
+        // Store user_id in localStorage - use the correct property name
+        localStorage.setItem('user_id', userData.user_id);
+
         // Dispatch auth state change event when user data is set
         window.dispatchEvent(new Event('auth-state-change'));
       } catch (userError) {
@@ -119,6 +157,20 @@ const authService = {
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
+    }
+  },
+
+  /**
+   * Get the appropriate redirect path after login based on user type
+   * @returns {Promise<string>} The path to redirect to
+   */
+  getRedirectPath: async () => {
+    try {
+      const userType = await authService.getUserType();
+      return getRedirectPathForUserType(userType);
+    } catch (error) {
+      console.error('Error determining redirect path:', error);
+      return '/';
     }
   },
 
@@ -157,6 +209,7 @@ const authService = {
     console.log('logout: Removing tokens and user data');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('last_visited_page');
     userData = null;
     
     // Dispatch auth state change event when user logs out
@@ -182,6 +235,22 @@ const authService = {
   },
 
   /**
+   * Save the current page for later restoration
+   * @param {string} path - Current path to save
+   */
+  saveCurrentPage: (path) => {
+    saveLastVisitedPage(path);
+  },
+
+  /**
+   * Get the last visited page
+   * @returns {string} The last visited page or default dashboard
+   */
+  getLastVisitedPage: () => {
+    return getLastVisitedPage();
+  },
+
+  /**
    * Set up axios interceptors to handle token refresh
    */
   setupAxiosInterceptors: () => {
@@ -200,14 +269,15 @@ const authService = {
             // Try to refresh the token
             await authService.refreshToken();
             
-            // Update the authorization header
-            originalRequest.headers['Authorization'] = `Bearer ${getStoredAccessToken()}`;
-            console.log('Interceptor: Token refreshed, retrying original request');
+            // Update the Authorization header with the new token
+            const newToken = getStoredAccessToken();
+            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
             
             // Retry the original request
+            console.log('Interceptor: Retrying original request with new token');
             return axios(originalRequest);
           } catch (refreshError) {
-            console.error('Interceptor: Token refresh failed, redirecting to login');
+            console.error('Interceptor: Token refresh failed, redirecting to login', refreshError);
             // If refresh fails, redirect to login
             window.location.href = '/login';
             return Promise.reject(refreshError);
@@ -225,32 +295,71 @@ authService.setupAxiosInterceptors();
 
 // Initialize user data on page load if tokens exist
 const initializeUserData = async () => {
-  console.log('initializeUserData: Checking for tokens on page load');
   if (authService.isAuthenticated()) {
+    console.log('Initializing user data on page load');
     try {
-      console.log('initializeUserData: Found token, fetching user data');
-      await authService.getUserType();
-      // Note: No need to dispatch event here as getUserType already does it
+      const userType = await authService.getUserType();
+      
+      // Redirect based on user type if we're at the root or login page
+      if (window.location.pathname === '/' || window.location.pathname === '/login') {
+        const redirectPath = getRedirectPathForUserType(userType);
+        if (redirectPath !== window.location.pathname) {
+          console.log(`Redirecting ${userType} to ${redirectPath}`);
+          window.location.href = redirectPath;
+        }
+      }
+      
+      // Prevent customers from accessing farmer pages
+      if (userType === 'CUSTOMER' && window.location.pathname.startsWith('/farmer')) {
+        console.log('Customer attempting to access farmer page, redirecting to home');
+        window.location.href = '/';
+      }
+      
+      // Prevent farmers from accessing customer pages
+      if (userType === 'FARMER' && window.location.pathname.startsWith('/customer')) {
+        console.log('Farmer attempting to access customer page, redirecting to farmer dashboard');
+        window.location.href = '/farmer/dashboard';
+      }
     } catch (error) {
-      console.error('Error initializing user data:', error);
+      console.error('Failed to initialize user data:', error);
     }
-  } else {
-    console.log('initializeUserData: No token found on page load');
   }
 };
+
+// Initialize user data
+initializeUserData();
 
 // Add cross-tab communication for logout
 window.addEventListener('storage', (event) => {
   // If another tab clears the tokens, log out in this tab too
   if (event.key === 'access_token' && !event.newValue) {
-    console.log('storage event: Token cleared in another tab, logging out in this tab');
+    console.log('Token cleared in another tab, logging out in this tab');
     userData = null;
     window.dispatchEvent(new Event('auth-state-change'));
+    
+    // Redirect to home if not already there
+    if (window.location.pathname !== '/') {
+      window.location.href = '/';
+    }
   }
 });
 
-// Run initialization
-console.log('authService: Running initialization');
-initializeUserData();
+// Add function to ensure user_id is available
+const ensureUserId = async () => {
+  const userId = localStorage.getItem('user_id');
+  if (!userId) {
+    try {
+      const userData = await authService.getUserData();
+      if (userData) {
+        localStorage.setItem('user_id', userData.user_id);
+      }
+    } catch (error) {
+      console.error('Error ensuring user_id:', error);
+    }
+  }
+};
+
+// Call ensureUserId function
+ensureUserId();
 
 export default authService;

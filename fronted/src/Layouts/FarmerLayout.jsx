@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '../Features/Farmer/Sidebar';
-import { IoIosNotifications } from "react-icons/io";
+import { FaCommentAlt } from "react-icons/fa";
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Logo from "../assets/Logo.png";
 import { FaBars } from 'react-icons/fa';
-import authService from '../Services/authService';
+import authService from '../services/authService';
 import { toast } from 'react-hot-toast';
 
 function Header({ toggleSidebar }) {
@@ -36,10 +36,10 @@ function Header({ toggleSidebar }) {
         </NavLink>
       </div>
 
-      {/* Notifications & Logout Button */}
+      {/* Chat & Logout Button */}
       <div className="flex items-center gap-6">
-        <NavLink to="/farmer/notifications" className="text-2xl">
-          <IoIosNotifications />
+        <NavLink to="/farmer/chat" className="text-2xl relative">
+          <FaCommentAlt />
         </NavLink>
         <button 
           className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700"
@@ -63,7 +63,7 @@ function FarmerLayout() {
     console.log('FarmerLayout mounted');
     console.log('Current path:', location.pathname);
     
-    const token = authService.getToken();
+    const token = authService.getAccessToken();
     console.log('Has token:', !!token);
     
     if (!token) {

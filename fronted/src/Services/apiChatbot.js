@@ -1,8 +1,8 @@
 import axios from 'axios';
 import authService from './authService';
 
-// API base URL
-const API_URL = 'http://localhost:8000/api';
+// Base URL for API requests
+const API_URL = `${import.meta.env.VITE_BACKEND_DOMAIN}/api`;
 
 /**
  * Upload an image for disease detection

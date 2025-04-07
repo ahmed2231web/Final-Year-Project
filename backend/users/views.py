@@ -9,6 +9,10 @@ from django.conf import settings
 from django.core.mail import send_mail
 import logging
 from .permissions import IsFarmer
+from .signals import is_temp_email_domain
+from .models import NewsArticle
+from .serializers import NewsArticleSerializer
+from rest_framework.generics import ListAPIView
 
 # Create your views here.
 logger = logging.getLogger(__name__)
@@ -64,7 +68,19 @@ class PasswordResetRequestView(APIView):
         # Send email
         subject = "Password Reset Request"
         message = f"Click the link to reset your password: {reset_url}"
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+        
+        # Check if it's a temporary email domain
+        is_temp = is_temp_email_domain(email)
+        if is_temp:
+            logger.info(f"Sending password reset email to temporary domain: {email}")
+            
+        try:
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=is_temp)
+            logger.info(f"Password reset email sent to {email}")
+        except Exception as e:
+            logger.error(f"Failed to send password reset email to {email}: {str(e)}")
+            if not is_temp:
+                return Response({"error": "Failed to send email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({"message": "Password reset email sent"}, status=status.HTTP_200_OK)
 
@@ -134,3 +150,35 @@ class UserTypeView(APIView):
             "user_id": request.user.id,
             "full_name": request.user.full_name
         }, status=status.HTTP_200_OK)
+
+class NewsArticleListView(ListAPIView):
+    """
+    API view to retrieve news articles.
+    
+    GET: Returns a list of all active news articles.
+    Can be filtered by category using query parameter 'category'.
+    """
+    serializer_class = NewsArticleSerializer
+    permission_classes = [AllowAny]  # Allow anyone to view news articles
+    
+    def get_queryset(self):
+        """
+        Optionally filters the queryset by category if provided in query params.
+        Only returns active articles, ordered by creation date (newest first).
+        """
+        queryset = NewsArticle.objects.filter(is_active=True).order_by('-created_at')
+        
+        # Filter by category if provided in query params
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category=category)
+            
+        return queryset
+    
+    def get_serializer_context(self):
+        """
+        Add request to serializer context to enable building absolute URLs
+        """
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
