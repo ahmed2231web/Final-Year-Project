@@ -5,9 +5,9 @@ import { MdOutlineChat } from "react-icons/md";
 import { NavLink } from 'react-router-dom';
 import { AiOutlineOpenAI } from 'react-icons/ai';
 import { IoMdClose } from "react-icons/io";
-import { FaNewspaper, FaCircle } from 'react-icons/fa';
-import authService from '../../services/authService';
-import { getUnreadChatsInfo } from '../../services/chatService';
+import { FaNewspaper} from 'react-icons/fa';
+import authService from '../../Services/autheServices';
+import { getUnreadChatsInfo } from '../../Services/chatService';
 
 export function Sidebar({ closeSidebar }) {
   const [hasUnreadChats, setHasUnreadChats] = useState(false);

@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import ProductList from './ProductList';
 import Cart from './Cart';
 import { FaShoppingCart, FaSearch } from 'react-icons/fa';
-import { getAllProducts, getProductCategories } from '../../../Services/apiCustomerProducts';
+import { getAllProducts } from '../../../Services/apiCustomerProducts';
 import LoadingSpinner from '../../../Components/Common/LoadingSpinner';
-import authService from '../../../services/authService';
+import authService from '../../../Services/autheServices';
 
 /**
  * Customer Dashboard Component

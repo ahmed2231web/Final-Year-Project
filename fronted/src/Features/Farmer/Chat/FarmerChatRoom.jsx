@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPaperPlane, FaImage, FaSpinner, FaTimes, FaCircle } from 'react-icons/fa';
-import authService from '../../../services/authService';
-import { getChatMessages, createChatConnection, markChatAsRead, getChatRoomDetails, registerWebSocket } from '../../../services/chatService';
-import { markRoomAsActive, markRoomAsInactive, updateOnlineStatus } from '../../../services/statusService';
+import { FaArrowLeft, FaPaperPlane, FaImage, FaSpinner, FaTimes } from 'react-icons/fa';
+import authService from '../../../Services/autheServices';
+import { getChatMessages, createChatConnection, markChatAsRead, getChatRoomDetails, registerWebSocket } from '../../../Services/chatService';
+import { markRoomAsActive, markRoomAsInactive, updateOnlineStatus } from '../../../Services/statusService';
 import toast from 'react-hot-toast';
 
 /**

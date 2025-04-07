@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaPlus, FaMinus, FaShoppingCart, FaArrowLeft } from 'react-icons/fa';
-import axios from 'axios';
-import authService from '../../../services/authService'; 
+import authService from '../../../Services/autheServices'; 
 import toast from 'react-hot-toast';
-import { createChatRoom } from '../../../services/chatService';
+import { createChatRoom } from '../../../Services/chatService';
 
 /**
  * Cart Component

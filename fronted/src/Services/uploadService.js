@@ -1,5 +1,4 @@
-import axios from 'axios';
-import authService from './authService';
+import authService from './autheServices';
 import { uploadImage as cloudinaryUpload, uploadMultipleImages as cloudinaryUploadMultiple } from './apiCloudinary';
 
 /**

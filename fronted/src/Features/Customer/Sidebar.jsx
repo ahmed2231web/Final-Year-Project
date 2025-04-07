@@ -4,9 +4,8 @@ import { MdOutlineChat } from "react-icons/md";
 import { NavLink } from 'react-router-dom';
 import { AiOutlineOpenAI } from 'react-icons/ai';
 import { IoMdClose } from "react-icons/io";
-import { FaCircle } from 'react-icons/fa';
-import authService from '../../services/authService';
-import { getUnreadChatsInfo } from '../../services/chatService';
+import authService from '../../Services/autheServices';
+import { getUnreadChatsInfo } from '../../Services/chatService';
 
 /**
  * Sidebar component for customer dashboard

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import uploadService from '../Services/uploadService';
-import authService from '../Services/authService';
+import authService from '../Services/autheServices';
 
 /**
  * Custom hook for handling Cloudinary image uploads

@@ -4,7 +4,7 @@ import { FaCommentAlt } from "react-icons/fa";
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Logo from "../assets/Logo.png";
 import { FaBars } from 'react-icons/fa';
-import authService from '../services/authService';
+import authService from '../Services/autheServices';
 import { toast } from 'react-hot-toast';
 
 function Header({ toggleSidebar }) {

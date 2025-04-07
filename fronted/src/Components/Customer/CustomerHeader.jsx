@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaBars, FaTimes, FaCommentAlt } from 'react-icons/fa';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import Logo from "../../assets/Logo.png";
-import authService from '../../services/authService';
+import authService from '../../Services/autheServices';
 import { MdOutlineDashboard } from 'react-icons/md';
 import { AiOutlineOpenAI } from 'react-icons/ai';
 

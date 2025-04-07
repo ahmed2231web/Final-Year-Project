@@ -3,9 +3,8 @@ import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import React, { useState } from 'react';
 import { createEditProduct } from '../../../Services/apiProducts';
-import InputProduct from "./InputProduct";
 import uploadService from '../../../Services/uploadService';
-import authService from '../../../Services/authService';
+import authService from '../../../Services/autheServices';
 
 function AddProductForm({productToEdit={}, onFormSubmit}) {
   const { register, handleSubmit, reset, formState: { errors } } = useForm({

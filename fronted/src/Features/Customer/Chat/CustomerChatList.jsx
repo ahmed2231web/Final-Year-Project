@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaSpinner, FaComment, FaCircle } from 'react-icons/fa';
-import authService from '../../../services/authService';
-import { getChatRooms } from '../../../services/chatService';
+import authService from '../../../Services/autheServices';
+import { getChatRooms } from '../../../Services/chatService';
 import toast from 'react-hot-toast';
 
 /**
