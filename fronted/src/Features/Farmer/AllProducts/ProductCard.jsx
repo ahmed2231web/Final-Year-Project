@@ -173,25 +173,32 @@ function ProductCard({ product, onEdit, onDelete, onView }) {
           </p>
         </div>
         
-        <div className="card-actions justify-end mt-4 space-x-2">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(product);
-            }} 
-            className="btn btn-sm bg-gradient-to-r from-green-500 to-green-600 border-none text-white hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:translate-y-[-2px]"
-          >
-            <FaEdit className="mr-1" /> Edit
-          </button>
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(product.id);
-            }} 
-            className="btn btn-sm bg-white border border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-md transform hover:translate-y-[-2px]"
-          >
-            <FaTrash className="mr-1" /> Delete
-          </button>
+        {/* Action Buttons - Aligned in one row */}
+        <div className="flex justify-end items-center mt-4">
+          <div className="flex space-x-2">
+            <motion.button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(product);
+              }} 
+              className="px-3 py-1.5 rounded-full bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all duration-300 flex items-center gap-1.5 shadow-sm"
+              whileHover={{ scale: 1.05, y: -2, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaEdit className="text-sm" /> <span className="font-medium">Edit</span>
+            </motion.button>
+            <motion.button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(product.id);
+              }} 
+              className="px-3 py-1.5 rounded-full bg-white border-2 border-red-400 text-red-500 hover:bg-red-50 transition-all duration-300 flex items-center gap-1.5 shadow-sm"
+              whileHover={{ scale: 1.05, y: -2, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaTrash className="text-sm" /> <span className="font-medium">Delete</span>
+            </motion.button>
+          </div>
         </div>
       </div>
     </motion.div>

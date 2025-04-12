@@ -50,14 +50,17 @@ function Products() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productToEdit, setProductToEdit] = useState(null);
 
   const handleAddProduct = (newProduct) => {
     console.log('New product:', newProduct);
     setShowAddForm(false);
+    setProductToEdit(null);
   };
 
   const handleEditProduct = (product) => {
     console.log('Edit product:', product);
+    setProductToEdit(product);
     setShowAddForm(true);
   };
 
@@ -177,66 +180,79 @@ function Products() {
               </motion.span>
             </h1>
 
-            {/* Search Bar */}
+            {/* Improved Search Bar */}
             <motion.div 
-              className="w-full md:w-96 max-w-xs md:max-w-md flex items-center border border-gray-200 rounded-full shadow-md bg-white overflow-hidden"
+              className="w-full md:w-96 max-w-xs md:max-w-md relative"
               initial={{ width: "80%", opacity: 0 }}
               animate={{ width: "100%", opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-6 pr-12 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-inset transition duration-300 ease-in-out text-sm placeholder-gray-500"
-              />
-              <div className="pr-4">
-                <IoSearchSharp className="text-xl text-green-600" />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 text-gray-800 bg-white border-2 border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300 ease-in-out text-sm placeholder-gray-500"
+                />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <IoSearchSharp className="text-xl text-green-600" />
+                </div>
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             </motion.div>
           </div>
 
-          {/* Filters and Sorting */}
+          {/* Improved Filters and Sorting */}
           <motion.div 
             className="flex flex-wrap items-center justify-between gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <motion.button 
                 onClick={() => setShowFilters(!showFilters)}
-                className="btn btn-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="px-4 py-2 rounded-full bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 flex items-center gap-2 shadow-sm transition-all duration-200"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 <FaFilter className="text-green-600" /> 
-                Filters
+                <span className="font-medium">Filters</span>
               </motion.button>
               
               <div className="relative">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="select select-sm select-bordered border-gray-300 pr-8 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+                  className="appearance-none pl-4 pr-10 py-2 rounded-full bg-white border-2 border-gray-200 text-gray-700 font-medium hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent shadow-sm transition-all duration-200"
                 >
                   <option value="newest">Newest</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
                 </select>
-                <FaSort className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
+                  <FaSort className="text-gray-500" />
+                </div>
               </div>
             </div>
             
+            {/* Improved Add New Product Button */}
             <motion.button
               onClick={() => setShowAddForm(true)}
-              className="btn btn-sm bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white border-none shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
+              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+              whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
+              whileTap={{ scale: 0.97 }}
             >
-              <IoAddCircleOutline className="text-lg" />
-              Add New Product
+              <IoAddCircleOutline className="text-xl" />
+              <span>Add New Product</span>
             </motion.button>
           </motion.div>
           
@@ -359,7 +375,10 @@ function Products() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <AddProductForm onFormSubmit={() => setShowAddForm(false)} />
+              <AddProductForm 
+                productToEdit={productToEdit} 
+                onFormSubmit={() => setShowAddForm(false)} 
+              />
             </motion.div>
           )}
         </AnimatePresence>
