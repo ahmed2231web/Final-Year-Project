@@ -9,10 +9,12 @@
 
 4) Add edit profile option for both ( optional )
 
-5) Improve little bit UI make it more responsive add more responsive logic in UI
+5) Improve little bit UI make it more responsive add more responsive logic in UI so it can be used on all type of devices without any problem
 
 6) Also why email goes of Your account is active
 
 7) I asked you not to add two image selecting option here but to show all the images that farmer upload to customer product card that in which user is customer is seeing products. so remove two image selecing option from the chat UI.
 
 8) Remove some tables from db also 
+
+9) Add logo icon in admin 

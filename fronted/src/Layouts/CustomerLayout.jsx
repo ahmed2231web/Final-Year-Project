@@ -22,7 +22,7 @@ function CustomerLayout() {
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="flex flex-col min-h-screen max-w-[100vw] overflow-x-hidden">
+    <div className="flex flex-col min-h-screen w-full">
       {/* Header */}
       <CustomerHeader />
       
@@ -54,7 +54,7 @@ function CustomerLayout() {
         </div>
         
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-x-hidden w-full">
+        <main className="flex-1 p-4 md:p-6 w-full">
           <div className="max-w-full mx-auto">
             <Outlet />
           </div>

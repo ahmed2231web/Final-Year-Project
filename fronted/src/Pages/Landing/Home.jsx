@@ -6,12 +6,14 @@ import CropGrid from "../../Components/HomePage/CropGrid"
 
 function Home() {
   return (
-<div className="bg-white overflow-x-hidden">
-    <Hero />
-    <Marquee />
-    <Features />
-    <CropGrid/>
-</div>
+    <div className="bg-white overflow-x-hidden w-full">
+      <div className="max-w-[100vw]">
+        <Hero />
+        <Marquee />
+        <Features />
+        <CropGrid/>
+      </div>
+    </div>
   )
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaPaperPlane, FaImage, FaSpinner, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaImage, FaSpinner, FaTimes, FaEllipsisV, FaComment } from 'react-icons/fa';
 import authService from '../../../Services/autheServices';
 import { getChatMessages, createChatConnection, markChatAsRead, getChatRoomDetails, registerWebSocket } from '../../../Services/chatService';
 import { markRoomAsActive, markRoomAsInactive, updateOnlineStatus } from '../../../Services/statusService';
@@ -352,28 +352,49 @@ function CustomerChatRoom() {
   };
   
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col h-screen bg-gray-100 -ml-4 md:-ml-6 -mt-4 md:-mt-6">
       {/* Header */}
-      <div className="bg-green-600 text-white p-4 flex items-center shadow-md">
-        <button onClick={goBack} className="mr-4 text-white">
-          <FaArrowLeft size={20} />
-        </button>
-        {roomDetails ? (
-          <div className="flex items-center">
-            <div className="font-medium text-lg">
-              {roomDetails.farmer_detail?.full_name || 
-               roomDetails.farmer_detail?.username || 
-               roomDetails.farmer?.full_name || 
-               roomDetails.farmer_name || 
-               'Farmer'}
+      <div className="bg-green-600 text-white p-4 flex items-center justify-between shadow-md">
+        <div className="flex items-center">
+          <button onClick={goBack} className="mr-4 text-white hover:bg-green-700 p-2 rounded-full transition-colors">
+            <FaArrowLeft size={18} />
+          </button>
+          {roomDetails ? (
+            <div className="flex items-center">
+              <div className="relative">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-green-600 font-bold text-lg mr-3">
+                  {(roomDetails.farmer_detail?.full_name || roomDetails.farmer_detail?.username || roomDetails.farmer?.full_name || roomDetails.farmer_name || 'Farmer').charAt(0).toUpperCase()}
+                </div>
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-green-600"></div>
+              </div>
+              <div>
+                <div className="font-medium text-lg">
+                  {roomDetails.farmer_detail?.full_name || 
+                   roomDetails.farmer_detail?.username || 
+                   roomDetails.farmer?.full_name || 
+                   roomDetails.farmer_name || 
+                   'Farmer'}
+                </div>
+                {roomDetails.product && (
+                  <div className="text-xs text-green-200">Product: {roomDetails.product.productName}</div>
+                )}
+              </div>
             </div>
-            {roomDetails.product && (
-              <div className="ml-2 text-sm opacity-80">• {roomDetails.product.productName}</div>
-            )}
-          </div>
-        ) : (
-          <div className="h-6 w-40 bg-green-700 rounded animate-pulse"></div>
-        )}
+          ) : (
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-green-700 rounded-full mr-3 animate-pulse"></div>
+              <div>
+                <div className="h-5 w-32 bg-green-700 rounded animate-pulse mb-1"></div>
+                <div className="h-3 w-24 bg-green-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div>
+          <button className="p-2 hover:bg-green-700 rounded-full transition-colors">
+            <FaEllipsisV size={16} />
+          </button>
+        </div>
       </div>
       
       {/* Chat Messages */}
@@ -384,9 +405,17 @@ function CustomerChatRoom() {
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-500">
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <p className="text-center">No messages yet</p>
-              <p className="text-sm text-center mt-2">Send a message to start the conversation</p>
+            <div className="bg-white p-6 rounded-xl shadow-md max-w-md w-full">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <FaComment className="text-green-600 text-2xl" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-green-700 text-center mb-2">Start a Conversation</h3>
+              <p className="text-center mb-4">This is the beginning of your conversation with {roomDetails?.farmer_detail?.full_name || roomDetails?.farmer?.full_name || 'the farmer'}.</p>
+              <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                <p className="text-sm text-green-800">💡 <strong>Tip:</strong> Ask specific questions about the product to get the information you need!</p>
+              </div>
             </div>
           </div>
         ) : (

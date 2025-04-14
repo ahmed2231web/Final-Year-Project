@@ -17,7 +17,7 @@ function Button({ variant, children, to, onClick, className, disabled }) {
       <button
         onClick={handleClick}
         disabled={disabled}
-        className={`uppercase font-semibold py-2 px-11 inline-block transition-colors duration-300 focus:outline-none focus:ring focus:ring-offset-2 rounded-full ${className || 'bg-yellow-400 text-stone-800 hover:bg-yellow-300 focus:bg-yellow-300 focus:ring-yellow-300'}`}
+        className={`uppercase font-semibold py-2 px-4 sm:px-6 md:px-8 text-sm sm:text-base inline-block transition-colors duration-300 focus:outline-none focus:ring focus:ring-offset-1 sm:focus:ring-offset-2 rounded-full ${disabled ? 'opacity-60 cursor-not-allowed' : ''} ${className || 'bg-yellow-400 text-stone-800 hover:bg-yellow-300 focus:bg-yellow-300 focus:ring-yellow-300'}`}
       >
         {children}
       </button>
@@ -26,12 +26,12 @@ function Button({ variant, children, to, onClick, className, disabled }) {
 
   if (variant === "navlink") {
     return (
-      <div className="flex bg-white rounded-full w-80 mx-auto p-1 justify-between items-center mb-2">
+      <div className="flex bg-white rounded-full w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto p-1 justify-between items-center mb-2">
         <NavLink
           to="/login"
           className={({ isActive }) =>
-            `w-[20] h-9 ml-3 px-10 py-1 rounded-xl ${
-              isActive ? "bg-yellow-400" : ""
+            `flex-1 text-center h-9 ml-1 sm:ml-3 px-2 sm:px-6 md:px-10 py-1 rounded-xl text-sm sm:text-base transition-colors duration-200 ${
+              isActive ? "bg-yellow-400 font-medium" : "hover:bg-gray-100"
             }`
           }
         >
@@ -40,8 +40,8 @@ function Button({ variant, children, to, onClick, className, disabled }) {
         <NavLink
           to="/signup"
           className={({ isActive }) =>
-            `w-[20] h-9 mr-4 px-10 py-1 rounded-xl ${
-              isActive ? "bg-yellow-400" : ""
+            `flex-1 text-center h-9 mr-1 sm:mr-3 px-2 sm:px-6 md:px-10 py-1 rounded-xl text-sm sm:text-base transition-colors duration-200 ${
+              isActive ? "bg-yellow-400 font-medium" : "hover:bg-gray-100"
             }`
           }
         >

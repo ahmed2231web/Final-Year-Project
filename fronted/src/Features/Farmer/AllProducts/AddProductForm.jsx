@@ -243,43 +243,43 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
   return (
     <AnimatePresence>
       <motion.div 
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         <motion.div 
-          className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-xl sm:rounded-2xl shadow-xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: 'spring', damping: 25 }}
         >
           {/* Header */}
-          <div className="relative px-8 py-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-center">
+          <div className="relative px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b border-gray-200">
+            <h2 className="text-xl sm:text-2xl font-bold text-center">
               <span className="bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
                 {isEditSession ? 'Edit Product' : 'Add New Product'}
               </span>
             </h2>
             <button 
               onClick={handleCancel}
-              className="absolute right-6 top-6 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="absolute right-3 sm:right-6 top-4 sm:top-6 p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Close"
             >
-              <IoClose className="text-gray-600 text-xl" />
+              <IoClose className="text-gray-600 text-lg sm:text-xl" />
             </button>
           </div>
           
-          <form onSubmit={handleSubmit(onSubmit)} className="px-8 py-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="px-4 sm:px-6 md:px-8 py-4 sm:py-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Product Name */}
               <div className="form-control w-full md:col-span-2">
-                <label className="text-sm font-medium text-gray-700 mb-1.5">Product Name</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">Product Name</label>
                 <input
                   type="text"
                   {...register("productName", { required: "Product name is required" })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none text-sm sm:text-base"
                   placeholder="Enter product name"
                 />
                 {errors.productName && (
@@ -289,11 +289,11 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
               
               {/* Category */}
               <div className="form-control w-full md:col-span-2">
-                <label className="text-sm font-medium text-gray-700 mb-1.5">Category</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">Category</label>
                 <div className="relative">
                   <select 
                     {...register("category", { required: "Category is required" })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none appearance-none"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none appearance-none text-sm sm:text-base"
                   >
                     <option value="">Select a category</option>
                     <option value="Vegetables">Vegetables</option>
@@ -313,7 +313,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
               
               {/* Description */}
               <div className="form-control w-full md:col-span-2">
-                <label className="text-sm font-medium text-gray-700 mb-1.5">Description</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea 
                   {...register("description", { 
                     required: "Description is required",
@@ -322,9 +322,9 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
                       message: "Description should be at least 10 characters"
                     }
                   })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none resize-none"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none resize-none text-sm sm:text-base"
                   placeholder="Describe your product..."
-                  rows={4}
+                  rows={3}
                 ></textarea>
                 {errors.description && (
                   <span className="text-red-500 text-sm mt-1">{errors.description.message}</span>
@@ -333,7 +333,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
               
               {/* Price */}
               <div className="form-control w-full">
-                <label className="text-sm font-medium text-gray-700 mb-1.5">Price (per kg)</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">Price (per kg)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -345,7 +345,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
                         message: "Price must be greater than 0"
                       }
                     })}
-                    className="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                    className="w-full pl-7 sm:pl-8 pr-3 sm:pr-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none text-sm sm:text-base"
                     placeholder="0.00"
                   />
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -359,7 +359,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
               
               {/* Discount */}
               <div className="form-control w-full">
-                <label className="text-sm font-medium text-gray-700 mb-1.5">Discount (%)</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -373,7 +373,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
                         message: "Discount cannot exceed 100%"
                       }
                     })}
-                    className="w-full pl-4 pr-8 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                    className="w-full pl-3 sm:pl-4 pr-7 sm:pr-8 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none text-sm sm:text-base"
                     placeholder="0"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -387,7 +387,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
               
               {/* Stock Quantity */}
               <div className="form-control w-full md:col-span-2">
-                <label className="text-sm font-medium text-gray-700 mb-1.5">Stock Quantity (kg)</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">Stock Quantity (kg)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -398,7 +398,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
                       message: "Stock cannot be negative"
                     }
                   })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none text-sm sm:text-base"
                   placeholder="0.00"
                 />
                 {errors.stockQuantity && (
@@ -408,8 +408,8 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
               
               {/* Image Upload */}
               <div className="form-control w-full md:col-span-2 mt-2">
-                <label className="text-sm font-medium text-gray-700 mb-1.5">Product Images (Up to 3)</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition-all bg-gray-50">
+                <label className="text-sm font-medium text-gray-700 mb-1">Product Images (Up to 3)</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg sm:rounded-xl p-4 sm:p-6 text-center hover:border-green-500 transition-all bg-gray-50">
                   <input 
                     type="file" 
                     onChange={handleFileChange}
@@ -419,10 +419,10 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
                     multiple
                   />
                   <label htmlFor="product-images" className="cursor-pointer">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <FaUpload className="text-green-500 text-2xl" />
-                      <span className="text-gray-700 font-medium">Click to upload images</span>
-                      <span className="text-gray-500 text-sm">or drag and drop</span>
+                    <div className="flex flex-col items-center justify-center gap-1 sm:gap-2">
+                      <FaUpload className="text-green-500 text-xl sm:text-2xl" />
+                      <span className="text-gray-700 font-medium text-sm sm:text-base">Click to upload images</span>
+                      <span className="text-gray-500 text-xs sm:text-sm">or drag and drop</span>
                       <span className="text-xs text-gray-400 mt-1">
                         Max 3 images (5MB each) - JPG, PNG, GIF
                       </span>
@@ -432,8 +432,8 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
                 
                 {/* Image Preview */}
                 {previewUrls.length > 0 && (
-                  <div className="mt-4">
-                    <div className="grid grid-cols-3 gap-4">
+                  <div className="mt-3 sm:mt-4">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
                       {previewUrls.map((url, index) => (
                         <motion.div 
                           key={index} 
@@ -442,11 +442,17 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <img 
-                            src={url} 
-                            alt={`Preview ${index + 1}`} 
-                            className="w-full h-28 object-cover"
-                          />
+                          <div className="aspect-square w-full overflow-hidden bg-gray-100">
+                            <img 
+                              src={url} 
+                              alt={`Preview ${index + 1}`} 
+                              className="w-full h-full object-contain"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://via.placeholder.com/150?text=Image+Error';
+                              }}
+                            />
+                          </div>
                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
                             <motion.button
                               type="button"
@@ -489,11 +495,11 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
             </div>
             
             {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mt-8 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-2 sm:gap-4 mt-6 sm:mt-8 pt-3 sm:pt-4 border-t border-gray-100">
               <motion.button
                 type="button"
                 onClick={handleCancel}
-                className="px-6 py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border border-gray-300 text-gray-700 text-sm sm:text-base font-medium hover:bg-gray-50 transition-all"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={isWorking}
@@ -502,7 +508,7 @@ function AddProductForm({productToEdit={}, onFormSubmit}) {
               </motion.button>
               <motion.button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white text-sm sm:text-base font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-1 sm:gap-2"
                 whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
                 whileTap={{ scale: 0.98 }}
                 disabled={isWorking}

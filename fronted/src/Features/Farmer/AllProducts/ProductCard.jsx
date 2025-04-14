@@ -57,14 +57,14 @@ function ProductCard({ product, onEdit, onDelete, onView }) {
   
   return (
     <motion.div 
-      className="card bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:scale-[1.02]"
+      className="card bg-white rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-[1.02] w-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ y: -5 }}
       onClick={() => onView(product)}
     >
       {/* Product Image with Carousel */}
-      <div className="relative h-52 bg-gradient-to-r from-gray-50 to-gray-100 overflow-hidden cursor-pointer">
+      <div className="relative h-40 sm:h-48 md:h-52 bg-gradient-to-r from-gray-50 to-gray-100 overflow-hidden cursor-pointer">
         {images.length > 0 ? (
           <>
             <img
@@ -77,7 +77,7 @@ function ProductCard({ product, onEdit, onDelete, onView }) {
             
             {imageError && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-                <p className="text-gray-500">Image not available</p>
+                <p className="text-xs sm:text-sm text-gray-500">Image not available</p>
               </div>
             )}
             
@@ -86,17 +86,17 @@ function ProductCard({ product, onEdit, onDelete, onView }) {
               <>
                 <button 
                   onClick={prevImage}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-2 shadow-lg hover:bg-opacity-100 transition-all duration-300 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                  className="absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-1 sm:p-2 shadow-md sm:shadow-lg hover:bg-opacity-100 transition-all duration-300 opacity-70 sm:opacity-0 group-hover:opacity-100 hover:opacity-100"
                   aria-label="Previous image"
                 >
-                  <FaChevronLeft className="text-green-700" />
+                  <FaChevronLeft className="text-green-700 text-xs sm:text-sm" />
                 </button>
                 <button 
                   onClick={nextImage}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-2 shadow-lg hover:bg-opacity-100 transition-all duration-300 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-1 sm:p-2 shadow-md sm:shadow-lg hover:bg-opacity-100 transition-all duration-300 opacity-70 sm:opacity-0 group-hover:opacity-100 hover:opacity-100"
                   aria-label="Next image"
                 >
-                  <FaChevronRight className="text-green-700" />
+                  <FaChevronRight className="text-green-700 text-xs sm:text-sm" />
                 </button>
                 
                 {/* Image Indicator Dots */}
@@ -139,25 +139,25 @@ function ProductCard({ product, onEdit, onDelete, onView }) {
         </div>
       </div>
       
-      <div className="card-body p-5">
-        <h2 className="card-title text-xl font-bold text-gray-800 mb-1 truncate">{productName}</h2>
-        <div className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mb-3">
+      <div className="card-body p-3 sm:p-4 md:p-5">
+        <h2 className="card-title text-base sm:text-lg md:text-xl font-bold text-gray-800 mb-1 truncate">{productName}</h2>
+        <div className="inline-block bg-green-100 text-green-800 text-xs px-2 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3">
           {category}
         </div>
         
         {/* Price Display */}
-        <div className="flex items-baseline mb-3">
+        <div className="flex items-baseline mb-2 sm:mb-3">
           {discount > 0 ? (
             <>
-              <span className="text-xl font-bold text-green-600 mr-2">
+              <span className="text-base sm:text-lg md:text-xl font-bold text-green-600 mr-1 sm:mr-2">
                 {formatCurrency(discountedPrice)}
               </span>
-              <span className="text-sm text-gray-500 line-through">
+              <span className="text-xs sm:text-sm text-gray-500 line-through">
                 {formatCurrency(price)}
               </span>
             </>
           ) : (
-            <span className="text-xl font-bold text-green-600">
+            <span className="text-base sm:text-lg md:text-xl font-bold text-green-600">
               {formatCurrency(price)}
             </span>
           )}
@@ -174,29 +174,29 @@ function ProductCard({ product, onEdit, onDelete, onView }) {
         </div>
         
         {/* Action Buttons - Aligned in one row */}
-        <div className="flex justify-end items-center mt-4">
-          <div className="flex space-x-2">
+        <div className="flex justify-end items-center mt-3 sm:mt-4">
+          <div className="flex space-x-1 sm:space-x-2">
             <motion.button 
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(product);
               }} 
-              className="px-3 py-1.5 rounded-full bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all duration-300 flex items-center gap-1.5 shadow-sm"
-              whileHover={{ scale: 1.05, y: -2, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
-              whileTap={{ scale: 0.95 }}
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white border border-green-500 text-green-600 hover:bg-green-50 transition-all duration-300 flex items-center gap-1 sm:gap-1.5 shadow-sm text-xs sm:text-sm"
+              whileHover={{ scale: 1.03, y: -1, boxShadow: "0 2px 4px -1px rgba(0, 0, 0, 0.1)" }}
+              whileTap={{ scale: 0.97 }}
             >
-              <FaEdit className="text-sm" /> <span className="font-medium">Edit</span>
+              <FaEdit className="text-xs sm:text-sm" /> <span className="font-medium hidden xs:inline">Edit</span>
             </motion.button>
             <motion.button 
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(product.id);
               }} 
-              className="px-3 py-1.5 rounded-full bg-white border-2 border-red-400 text-red-500 hover:bg-red-50 transition-all duration-300 flex items-center gap-1.5 shadow-sm"
-              whileHover={{ scale: 1.05, y: -2, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
-              whileTap={{ scale: 0.95 }}
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white border border-red-400 text-red-500 hover:bg-red-50 transition-all duration-300 flex items-center gap-1 sm:gap-1.5 shadow-sm text-xs sm:text-sm"
+              whileHover={{ scale: 1.03, y: -1, boxShadow: "0 2px 4px -1px rgba(0, 0, 0, 0.1)" }}
+              whileTap={{ scale: 0.97 }}
             >
-              <FaTrash className="text-sm" /> <span className="font-medium">Delete</span>
+              <FaTrash className="text-xs sm:text-sm" /> <span className="font-medium hidden xs:inline">Delete</span>
             </motion.button>
           </div>
         </div>

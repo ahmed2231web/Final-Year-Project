@@ -4,22 +4,22 @@ import CropCard from '../Cards/CropCard';
 const CropGrid = () => {
   const crops = [
     {
-      name: "Organic Wheat",
-      price: "299/ton",
-      location: "Gujrat, Punjab",
-      imageUrl: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800"
+      name: "Organic Vegetables",
+      price: "199/box",
+      location: "Islamabad, Pakistan",
+      imageUrl: "https://images.unsplash.com/photo-1518843875459-f738682238a6?auto=format&fit=crop&w=800"
     },
     {
-      name: "Fresh Rice",
-      price: "450/ton",
+      name: "Fresh Fruits",
+      price: "350/box",
       location: "Lahore, Punjab",
-      imageUrl: "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=800"
+      imageUrl: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800"
     },
     {
-      name: "Premium Cotton",
-      price: "750/ton",
-      location: "Karachi, Sindh",
-      imageUrl: "https://images.unsplash.com/photo-1594179047519-f347310d3322?auto=format&fit=crop&w=800"
+      name: "Organic Honey",
+      price: "550/kg",
+      location: "Peshawar, KPK",
+      imageUrl: "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=800"
     }
   ];
 

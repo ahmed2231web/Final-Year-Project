@@ -22,27 +22,31 @@ function Header({ toggleSidebar }) {
   };
 
   return (
-    <div className="bg-[#0A690E] text-white flex justify-between items-center p-4 relative z-50">
+    <div className="bg-[#0A690E] text-white flex justify-between items-center p-2 sm:p-3 md:p-4 sticky top-0 shadow-md relative z-50">
       {/* Sidebar Toggle Button */}
-      <button onClick={toggleSidebar} className="lg:hidden text-2xl">
+      <button 
+        onClick={toggleSidebar} 
+        className="lg:hidden text-xl sm:text-2xl p-2"
+        aria-label="Toggle sidebar"
+      >
         <FaBars />
       </button>
 
       {/* Logo & App Name */}
       <div className="flex items-center">
-        <img src={Logo} alt="Logo" className="h-12 w-12 mr-3 rounded-full" />
-        <NavLink to="/" className="text-2xl font-medium font-agbaluma">
+        <img src={Logo} alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mr-2 sm:mr-3 rounded-full" />
+        <NavLink to="/" className="text-lg sm:text-xl md:text-2xl font-medium font-agbaluma truncate">
           AgroConnect
         </NavLink>
       </div>
 
       {/* Chat & Logout Button */}
-      <div className="flex items-center gap-6">
-        <NavLink to="/farmer/chat" className="text-2xl relative">
+      <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
+        <NavLink to="/farmer/chat" className="text-xl sm:text-2xl relative p-2">
           <FaCommentAlt />
         </NavLink>
         <button 
-          className="bg-red-600 px-4 py-2 rounded-md hover:bg-red-700"
+          className="bg-red-600 px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm md:text-base rounded-md hover:bg-red-700 transition-colors"
           onClick={handleLogout}
         >
           Logout
@@ -80,16 +84,29 @@ function FarmerLayout() {
   }, [navigate, location.pathname]);
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
       
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative">
         {/* Sidebar - Always visible on large screens, conditionally visible on small screens */}
-        <div className={`lg:block ${isSidebarOpen ? 'block' : 'hidden'} absolute lg:relative bg-[#0A690E] lg:w-64 w-3/4 min-h-screen`}>
-          <Sidebar closeSidebar={() => setIsSidebarOpen(false)} />
+        <div 
+          className={`lg:block ${isSidebarOpen ? 'block' : 'hidden'} fixed lg:static lg:translate-x-0 z-40 bg-[#0A690E] lg:w-64 w-[80%] sm:w-[60%] md:w-[40%] h-[calc(100vh-4rem)] transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none`}
+        >
+          <div className="h-full overflow-y-auto">
+            <Sidebar closeSidebar={() => setIsSidebarOpen(false)} />
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        {/* Overlay when sidebar is open on mobile */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden" 
+            onClick={() => setIsSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        <div className="flex-1 w-full">
           <Outlet />
         </div>
       </div>

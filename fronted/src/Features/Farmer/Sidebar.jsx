@@ -5,7 +5,8 @@ import { MdOutlineChat } from "react-icons/md";
 import { NavLink } from 'react-router-dom';
 import { AiOutlineOpenAI } from 'react-icons/ai';
 import { IoMdClose } from "react-icons/io";
-import { FaNewspaper} from 'react-icons/fa';
+import { FaNewspaper } from 'react-icons/fa';
+import { TiWeatherPartlySunny } from "react-icons/ti";
 import authService from '../../Services/autheServices';
 import { getUnreadChatsInfo } from '../../Services/chatService';
 
@@ -47,7 +48,7 @@ export function Sidebar({ closeSidebar }) {
   }, []);
 
   return (
-    <div className="p-6 min-h-screen border-r-2 border-black">
+    <div className="p-6 border-r-2 border-black">
       {/* Close Button (Only on small screens) */}
       <button onClick={closeSidebar} className="lg:hidden text-3xl text-white mb-6">
         <IoMdClose />
@@ -109,6 +110,18 @@ export function Sidebar({ closeSidebar }) {
           }
         >
           <FaNewspaper className="mr-3 text-2xl" /> News
+        </NavLink>
+
+        {/* Weather */}
+        <NavLink
+          to="/farmer/weather"
+          className={({ isActive }) =>
+            `flex items-center text-2xl font-agbaluma font-normal ${
+              isActive ? "bg-yellow-400 text-black rounded-full p-3" : "text-white hover:text-yellow-400"
+            }`
+          }
+        >
+          <TiWeatherPartlySunny className="mr-3 text-2xl" /> Weather
         </NavLink>
       </div>
     </div>

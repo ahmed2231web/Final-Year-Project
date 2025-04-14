@@ -130,30 +130,44 @@ function CustomerChatList() {
                 onClick={() => openChatRoom(room.room_id)}
               >
                 <div className="flex p-4">
+                  <div className="relative mr-3">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-lg">
+                      {(room.farmer?.full_name || room.farmer_name || room.farmer?.username || 'Farmer').charAt(0).toUpperCase()}
+                    </div>
+                    {room.has_unread_customer && (
+                      <div className="absolute -top-1 -right-1 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        <span>!</span>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
                       <h3 className="text-sm font-medium text-gray-900">
                         {room.farmer?.full_name || room.farmer_name || room.farmer?.username || 'Farmer'}
                       </h3>
-                      {room.last_message?.timestamp && (
+                      {room.last_message?.timestamp ? (
                         <span className="text-xs text-gray-500">
                           {formatLastMessageTime(room.last_message.timestamp)}
                         </span>
+                      ) : (
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">New</span>
                       )}
                     </div>
                     
                     {room.product && (
-                      <p className="text-xs text-blue-600 mb-1 truncate">
+                      <p className="text-xs text-blue-600 mb-1 truncate flex items-center">
+                        <span className="inline-block w-2 h-2 bg-blue-600 rounded-full mr-1"></span>
                         {room.product.productName}
                       </p>
                     )}
                     
                     <div className="flex items-center">
-                      {room.has_unread_customer && (
-                        <FaCircle className="text-green-600 text-xs mr-2" />
-                      )}
                       <p className="text-sm text-gray-500 truncate">
-                        {room.last_message?.message || 'No messages yet'}
+                        {room.last_message?.message ? (
+                          <span>{room.last_message.message}</span>
+                        ) : (
+                          <span className="italic text-gray-400">Ask about this product</span>
+                        )}
                       </p>
                     </div>
                   </div>

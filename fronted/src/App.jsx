@@ -23,6 +23,7 @@ import CloudinaryTestSimple from './Features/Farmer/AllProducts/CloudinaryTestSi
 import EnvTest from './Features/Farmer/AllProducts/EnvTest';
 import Chatbot from "./Features/Farmer/Chatbot";
 import FarmerNews from "./Features/Farmer/News/FarmerNews";
+import Weather from "./Pages/Farmer/Weather";
 import ProtectedFarmerRoute from "./Components/Common/ProtectedRoute";
 import ProtectedCustomerRoute from "./Components/Common/ProtectedCustomerRoute";
 import CustomerDashboard from "./Features/Customer/Dashboard/CustomerDashboard";
@@ -147,6 +148,10 @@ const router = createBrowserRouter([
       {
         path: "news/:newsId", // Display the news for a specific newsId
         element: <FarmerNews />,
+      },
+      {
+        path: "weather",
+        element: <Weather />,
       },
     ],
   },

@@ -23,13 +23,13 @@ GEMINI_API_KEY = getenv('GEMINI_API_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*.ngrok.io']
 
 
 # Application definition
 INSTALLED_APPS = [
-    # 'admin_interface',  # Django admin interface customization
-    # 'colorfield',  # Color field for admin interface
+    'admin_interface',  # Django admin interface customization
+    'colorfield',  # Color field for admin interface
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -278,9 +278,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Security settings - X-Frame-Options
 # SAMEORIGIN allows the page to be displayed in a frame on the same origin as the page itself
-# X_FRAME_OPTIONS = "SAMEORIGIN"
+X_FRAME_OPTIONS = "SAMEORIGIN"
 # Silencing specific security checks - W019 relates to X-Frame-Options
-# SILENCED_SYSTEM_CHECKS = ["security.W019"]
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
 # Channel layers for Django Channels
 CHANNEL_LAYERS = {

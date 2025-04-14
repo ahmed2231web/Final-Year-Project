@@ -2,7 +2,7 @@ import TermsSection from './TermsSection';
 
 function Terms() {
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 w-full overflow-x-hidden">
       {/* Acceptance of Terms */}
       <TermsSection title="1. Acceptance of Terms">
         <p>
@@ -33,16 +33,13 @@ function Terms() {
           <li>
             <strong>Customers:</strong> Must comply with payment and purchase guidelines.
           </li>
-          <li>
-            <strong>Medicine Dealers:</strong> Must ensure the authenticity of medicines.
-          </li>
         </ul>
       </TermsSection>
 
       {/* Payment Terms */}
       <TermsSection title="5. Payment Terms">
         <p>
-          Customers must pay 10% upfront for online orders, with the balance due upon delivery.
+          Customers must complete payments according to the terms specified for each product or service.
         </p>
       </TermsSection>
 
@@ -53,12 +50,7 @@ function Terms() {
         </p>
       </TermsSection>
 
-      {/* Feedback and Reviews */}
-      <TermsSection title="7. Feedback and Reviews">
-        <p>
-          Users can provide honest feedback for farmers and dealers. Offensive or defamatory reviews are prohibited.
-        </p>
-      </TermsSection>
+
 
       {/* Prohibited Activities */}
       <TermsSection title="8. Prohibited Activities">

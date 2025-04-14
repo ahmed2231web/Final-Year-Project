@@ -27,5 +27,9 @@ if settings.DEBUG:
     ]
     # Alternatively, use static() (you can keep both for redundancy during debugging)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    # Add static files serving
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    print(f"Serving static files at {settings.STATIC_URL} from {settings.STATIC_ROOT}")
 else:
     print("DEBUG is False, media files will not be served by Django.")

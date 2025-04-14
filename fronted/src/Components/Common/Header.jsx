@@ -86,14 +86,15 @@ function Header() {
   const dashboardLink = getDashboardLink();
 
   return (
-    <nav className="bg-[#0A690E] shadow-lg w-full z-50">
+    <nav className="bg-[#0A690E] shadow-lg w-full z-50 sticky top-0">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Hamburger Menu for Small to Medium Screens */}
           <div className="block lg:hidden">
             <button
-              className="text-white hover:text-yellow-400"
+              className="text-white hover:text-yellow-400 p-2"
               onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
             >
               {menuOpen ? <FaTimes className="h-6 w-6" /> : <FaBars className="h-6 w-6" />}
             </button>
@@ -106,12 +107,12 @@ function Header() {
               <img 
                 src={Logo} 
                 alt="Logo" 
-                className="h-10 w-10 mr-2" 
+                className="h-8 w-8 sm:h-10 sm:w-10 mr-1 sm:mr-2" 
               />
             </NavLink>
             
             {/* Logo Text */}
-            <NavLink to="/" className="text-2xl text-white font-agbluma hover:text-yellow-400 transition duration-300 hover:scale-[1.1]">
+            <NavLink to="/" className="text-xl sm:text-2xl text-white font-agbluma hover:text-yellow-400 transition duration-300 hover:scale-[1.1]">
               AgroConnect
             </NavLink>
           </div>
@@ -143,14 +144,14 @@ function Header() {
           {/* Dropdown Menu for Small to Medium Screens */}
           {menuOpen && (
             <div
-              className="absolute top-16 left-4 bg-white shadow-md rounded-md w-48 py-2 lg:hidden z-50"
+              className="fixed top-16 left-0 right-0 bg-white shadow-md rounded-b-md py-2 lg:hidden z-50 max-h-[calc(100vh-4rem)] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {publicLinks.map(link => (
                 <NavLink
                   key={link.to}
                   to={link.to}
-                  className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
+                  className="block px-6 py-3 text-gray-700 hover:text-green-800 hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
                   onClick={() => setMenuOpen(false)}
                 >
                   {link.label}
@@ -160,7 +161,7 @@ function Header() {
               {dashboardLink && (
                 <NavLink
                   to={dashboardLink.to}
-                  className="block px-4 py-2 text-gray-700 hover:text-green-800 hover:bg-gray-100"
+                  className="block px-6 py-3 text-gray-700 hover:text-green-800 hover:bg-gray-100 border-b border-gray-100 last:border-b-0 font-medium"
                   onClick={() => setMenuOpen(false)}
                 >
                   {dashboardLink.label}
@@ -170,12 +171,12 @@ function Header() {
           )}
 
           {/* Auth Button */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {isAuthenticated && (
               <Button
                 to={userType === 'farmer' ? "/farmer/dashboard" : "/customer/dashboard"}
                 variant="button"
-                className="bg-yellow-400 text-stone-800 hover:bg-yellow-300 focus:bg-yellow-300 focus:ring-yellow-300 mr-2"
+                className="bg-yellow-400 text-stone-800 hover:bg-yellow-300 focus:bg-yellow-300 focus:ring-yellow-300 mr-1 sm:mr-2 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3"
               >
                 Dashboard
               </Button>
@@ -184,7 +185,7 @@ function Header() {
               <Button
                 onClick={handleLogout}
                 variant="button"
-                className="bg-red-500 text-white hover:bg-red-600 focus:bg-red-600 focus:ring-red-500"
+                className="bg-red-500 text-white hover:bg-red-600 focus:bg-red-600 focus:ring-red-500 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3"
               >
                 Logout
               </Button>
@@ -192,7 +193,7 @@ function Header() {
               <Button
                 to="/login"
                 variant="button"
-                className="bg-yellow-400 text-stone-800 hover:bg-yellow-300 focus:bg-yellow-300 focus:ring-yellow-300"
+                className="bg-yellow-400 text-stone-800 hover:bg-yellow-300 focus:bg-yellow-300 focus:ring-yellow-300 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3"
               >
                 Join Now
               </Button>
