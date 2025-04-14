@@ -19,6 +19,7 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - 🔒 Secure payment integration
 - 🤖 AI-powered crop disease detection and advisory
 - 🌿 Intelligent agricultural chatbot assistant
+- 🌤️ Real-time weather updates for farmers
 
 ## 🛠️ Tech Stack
 
@@ -80,6 +81,13 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - Persistent chat history across sessions
 - Comprehensive disease information and treatment recommendations
 - User-friendly image preview and selection
+
+### 🌤️ Weather Updates
+- Real-time weather data for farming locations
+- Agricultural-specific weather insights
+- Customized farming advice based on weather conditions
+- 3-day weather forecasts for planning
+- Weather alerts and notifications for extreme conditions
 
 ### 📱 Responsive Design
 - Mobile-first approach
@@ -159,6 +167,7 @@ Access the application at `http://localhost:5173`
   - 💻 React Components
   - 🎨 UI Implementation
   - 📱 Responsive Design
+  - 🌤️ Weather Integration
 
 ## 🤝 Contributing
 We welcome contributions! Here's how you can help:
