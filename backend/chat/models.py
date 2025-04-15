@@ -1,18 +1,13 @@
 from django.db import models
-from django.conf import settings
 from users.models import CustomUser
 from products.models import Product
+from orders.models import OrderStatus
 
 # Get the first user as a default (will be used only for migration)
 def get_default_user():
     return CustomUser.objects.first().id if CustomUser.objects.exists() else None
 
 # Create your models here.
-
-class OrderStatus(models.TextChoices):
-    NEW = 'new', 'New Order'
-    ACTIVE = 'active', 'Active Order'
-    COMPLETED = 'completed', 'Completed Order'
 
 
 '''

@@ -11,7 +11,7 @@ const CustomerChatbotPage = () => {
           AgroBot Assistant
         </h1>
         <p className="text-gray-600 text-center text-sm">
-          Ask me anything about farming, produce, or how to use AgroConnect!
+          Your farming assistant for crop information and agricultural guidance
         </p>
       </div>
       

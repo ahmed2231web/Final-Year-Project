@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaSpinner, FaPaperPlane, FaImage, FaTimes, FaEllipsisV, FaComment } from 'react-icons/fa';
+import { FaArrowLeft, FaSpinner, FaPaperPlane, FaImage, FaTimes, FaEllipsisV, FaComment, FaCheckCircle } from 'react-icons/fa';
 import authService from '../../../Services/autheServices';
 import { getChatMessages, createChatConnection, markChatAsRead, getChatRoomDetails, registerWebSocket } from '../../../Services/chatService';
 import { markRoomAsActive, markRoomAsInactive, updateOnlineStatus } from '../../../Services/statusService';
+import { updateOrderStatus } from '../../../Services/orderService';
 import toast from 'react-hot-toast';
 
 /**
@@ -64,6 +65,18 @@ function FarmerChatRoom() {
         // Set initial customer online status if available
         if (roomData.customer && roomData.customer.is_online !== undefined) {
           setCustomerOnline(roomData.customer.is_online);
+        }
+        
+        // Automatically change order status from 'new' to 'active' when farmer opens the chat
+        if (roomData.order_status === 'new') {
+          try {
+            await updateOrderStatus(roomId, 'active', token);
+            // Update the local room details
+            setRoomDetails(prev => ({ ...prev, order_status: 'active' }));
+            toast.success('Order status updated to Active');
+          } catch (error) {
+            console.error('Error updating order status to active:', error);
+          }
         }
         
         // Load messages
@@ -345,9 +358,27 @@ function FarmerChatRoom() {
     navigate('/farmer/chat');
   };
   
+  // Mark order as completed
+  const markAsCompleted = async () => {
+    if (!roomId || !roomDetails) return;
+    
+    try {
+      const token = authService.getAccessToken();
+      await updateOrderStatus(roomId, 'completed', token);
+      
+      // Update the local room details
+      setRoomDetails(prev => ({ ...prev, order_status: 'completed' }));
+      
+      toast.success('Order marked as completed');
+    } catch (error) {
+      console.error('Error marking order as completed:', error);
+      toast.error('Failed to mark order as completed');
+    }
+  };
+  
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      {/* Header */}
+      {/* Chat Header */}
       <div className="bg-green-600 text-white p-4 flex items-center justify-between shadow-md">
         <div className="flex items-center">
           <button onClick={goBack} className="mr-4 text-white hover:bg-green-700 p-2 rounded-full transition-colors">
@@ -357,20 +388,20 @@ function FarmerChatRoom() {
             <div className="flex items-center">
               <div className="relative">
                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-green-600 font-bold text-lg mr-3">
-                  {(roomDetails.customer_detail?.full_name || roomDetails.customer_detail?.username || roomDetails.customer?.full_name || roomDetails.customer_name || 'Customer').charAt(0).toUpperCase()}
+                  {(roomDetails.customer?.full_name || 'Customer').charAt(0).toUpperCase()}
                 </div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-green-600"></div>
+                {customerOnline && (
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-green-600"></div>
+                )}
               </div>
               <div>
                 <div className="font-medium text-lg">
-                  {roomDetails.customer_detail?.full_name || 
-                   roomDetails.customer_detail?.username || 
-                   roomDetails.customer?.full_name || 
-                   roomDetails.customer_name || 
-                   'Customer'}
+                  {roomDetails.customer?.full_name || 'Customer'}
                 </div>
                 {roomDetails.product && (
-                  <div className="text-xs text-green-200">Inquiring about: {roomDetails.product.productName}</div>
+                  <div className="text-xs text-green-200">
+                    Product: {roomDetails.product.productName} - Qty: {roomDetails.quantity || 1}
+                  </div>
                 )}
               </div>
             </div>
@@ -384,11 +415,28 @@ function FarmerChatRoom() {
             </div>
           )}
         </div>
-        <div>
-          <button className="p-2 hover:bg-green-700 rounded-full transition-colors">
-            <FaEllipsisV size={16} />
-          </button>
-        </div>
+        
+        {/* Order Status and Actions */}
+        {roomDetails && (
+          <div className="flex items-center">
+            <div className="mr-3">
+              <span className={`text-xs px-2 py-1 rounded ${roomDetails.order_status === 'completed' ? 'bg-green-400 text-green-800' : roomDetails.order_status === 'active' ? 'bg-blue-400 text-blue-800' : 'bg-yellow-400 text-yellow-800'}`}>
+                {roomDetails.order_status === 'completed' ? 'Completed' : 
+                 roomDetails.order_status === 'active' ? 'Active' : 'New'}
+              </span>
+            </div>
+            
+            {roomDetails.order_status !== 'completed' && (
+              <button 
+                onClick={markAsCompleted}
+                className="bg-white text-green-600 rounded-full p-2 hover:bg-green-100 transition"
+                title="Mark as completed"
+              >
+                <FaCheckCircle size={18} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
       
       {/* Chat Messages */}
@@ -435,7 +483,7 @@ function FarmerChatRoom() {
                   >
                     {/* Sender name for incoming messages */}
                     {!isCurrentUser && (
-                      <div className="text-xs text-blue-600 font-medium mb-1">
+                      <div className="text-xs text-gray-600 font-medium mb-1">
                         {displayName}
                       </div>
                     )}

@@ -352,7 +352,7 @@ function CustomerChatRoom() {
   };
   
   return (
-    <div className="flex flex-col h-screen bg-gray-100 -ml-4 md:-ml-6 -mt-4 md:-mt-6">
+    <div className="flex flex-col h-screen bg-gray-100 -ml-4 md:-ml-6 -mt-4 md:-mt-6 -mr-4 md:-mr-6">
       {/* Header */}
       <div className="bg-green-600 text-white p-4 flex items-center justify-between shadow-md">
         <div className="flex items-center">
@@ -441,7 +441,7 @@ function CustomerChatRoom() {
                   >
                     {/* Sender name for incoming messages */}
                     {!isCurrentUser && (
-                      <div className="text-xs text-blue-600 font-medium mb-1">
+                      <div className="text-xs text-gray-600 font-medium mb-1">
                         {displayName}
                       </div>
                     )}

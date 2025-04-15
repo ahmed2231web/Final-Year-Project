@@ -88,14 +88,36 @@ function FarmerLayout() {
       <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
       
       <div className="flex flex-1 relative">
-        {/* Sidebar - Always visible on large screens, conditionally visible on small screens */}
-        <div 
-          className={`lg:block ${isSidebarOpen ? 'block' : 'hidden'} fixed lg:static lg:translate-x-0 z-40 bg-[#0A690E] lg:w-64 w-[80%] sm:w-[60%] md:w-[40%] h-[calc(100vh-4rem)] transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none`}
-        >
-          <div className="h-full overflow-y-auto">
+        {/* Left column with sidebar */}
+        <div className="lg:flex flex-col lg:w-64 hidden bg-[#0A690E]">
+          {/* Sidebar */}
+          <div className="flex-1 overflow-y-auto">
             <Sidebar closeSidebar={() => setIsSidebarOpen(false)} />
           </div>
+          
+          {/* Sidebar Footer */}
+          <div className="bg-[#0A690E] text-white py-3 px-4 text-center border-t border-green-700">
+            <p className="text-sm">© 2025 AgroConnect</p>
+            <p className="text-xs text-green-300 mt-1">Connecting Farmers & Customers</p>
+          </div>
         </div>
+        
+        {/* Mobile sidebar - conditionally visible */}
+        {isSidebarOpen && (
+          <div 
+            className="lg:hidden fixed z-40 bg-[#0A690E] w-[80%] sm:w-[60%] md:w-[40%] h-screen flex flex-col transition-transform duration-300 ease-in-out shadow-xl"
+          >
+            <div className="flex-1 overflow-y-auto">
+              <Sidebar closeSidebar={() => setIsSidebarOpen(false)} />
+            </div>
+            
+            {/* Mobile Sidebar Footer */}
+            <div className="bg-[#0A690E] text-white py-3 px-4 text-center border-t border-green-700">
+              <p className="text-sm">© 2025 AgroConnect</p>
+              <p className="text-xs text-green-300 mt-1">Connecting Farmers & Customers</p>
+            </div>
+          </div>
+        )}
 
         {/* Overlay when sidebar is open on mobile */}
         {isSidebarOpen && (
@@ -106,6 +128,7 @@ function FarmerLayout() {
           />
         )}
 
+        {/* Main content area */}
         <div className="flex-1 w-full">
           <Outlet />
         </div>

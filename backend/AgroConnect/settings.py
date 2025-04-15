@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'users',
     'products',
     'ai_chatbot',
-    'chat'
+    'chat',
+    'orders'
 ]
 
 MIDDLEWARE = [

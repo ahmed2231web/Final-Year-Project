@@ -240,7 +240,7 @@ const CustomerChatbot = () => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask me anything about farming, produce, or how to use AgroConnect..."
+            placeholder="Ask about crops, farming techniques, or agricultural advice..."
             className="flex-1 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             disabled={isLoading || !chatSession}
           />

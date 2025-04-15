@@ -36,21 +36,35 @@ function FarmerChatList() {
     loadChatRooms();
   }, []);
 
-  // Filter rooms based on search term
+  // Sort and filter rooms based on search term and status
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredRooms(chatRooms);
-      return;
-    }
-
-    const filtered = chatRooms.filter(room => {
-      const searchTermLower = searchTerm.toLowerCase();
-      const customerName = room.customer?.full_name?.toLowerCase() || '';
-      const productName = room.product?.productName?.toLowerCase() || '';
-      return customerName.includes(searchTermLower) || productName.includes(searchTermLower);
+    let sorted = [...chatRooms];
+    
+    // Sort by status: new first, then active, then completed
+    sorted.sort((a, b) => {
+      // First priority: new orders at the top
+      if (a.order_status === 'new' && b.order_status !== 'new') return -1;
+      if (a.order_status !== 'new' && b.order_status === 'new') return 1;
+      
+      // Second priority: active orders before completed
+      if (a.order_status === 'active' && b.order_status === 'completed') return -1;
+      if (a.order_status === 'completed' && b.order_status === 'active') return 1;
+      
+      // Third priority: sort by recency (newest first)
+      return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
     });
-
-    setFilteredRooms(filtered);
+    
+    // Apply search filter if there's a search term
+    if (searchTerm.trim()) {
+      sorted = sorted.filter(room => {
+        const searchTermLower = searchTerm.toLowerCase();
+        const customerName = room.customer?.full_name?.toLowerCase() || '';
+        const productName = room.product?.productName?.toLowerCase() || '';
+        return customerName.includes(searchTermLower) || productName.includes(searchTermLower);
+      });
+    }
+    
+    setFilteredRooms(sorted);
   }, [searchTerm, chatRooms]);
 
   // Format timestamp for last message
@@ -126,7 +140,7 @@ function FarmerChatList() {
             {filteredRooms.map((room) => (
               <li 
                 key={room.id} 
-                className="hover:bg-gray-50 cursor-pointer"
+                className={`hover:bg-gray-50 cursor-pointer ${room.order_status === 'completed' ? 'bg-gray-50' : ''}`}
                 onClick={() => openChatRoom(room.room_id)}
               >
                 <div className="flex p-4">
@@ -142,27 +156,31 @@ function FarmerChatList() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <h3 className="text-sm font-medium text-gray-900">
+                      <h3 className={`text-sm font-medium ${room.order_status === 'completed' ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
                         {room.customer?.full_name || room.customer_name || room.customer?.username || 'Customer'}
                       </h3>
-                      {room.last_message?.timestamp ? (
-                        <span className="text-xs text-gray-500">
-                          {formatLastMessageTime(room.last_message.timestamp)}
+                      <div className="flex items-center space-x-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${room.order_status === 'completed' ? 'bg-green-100 text-green-800' : room.order_status === 'active' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                          {room.order_status === 'completed' ? 'Completed' : 
+                           room.order_status === 'active' ? 'Active' : 'New'}
                         </span>
-                      ) : (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">New</span>
-                      )}
+                        {room.last_message?.timestamp && (
+                          <span className="text-xs text-gray-500">
+                            {formatLastMessageTime(room.last_message.timestamp)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     {room.product && (
-                      <p className="text-xs text-blue-600 mb-1 truncate flex items-center">
-                        <span className="inline-block w-2 h-2 bg-blue-600 rounded-full mr-1"></span>
+                      <p className={`text-xs mb-1 truncate flex items-center ${room.order_status === 'completed' ? 'text-gray-500' : 'text-blue-600'}`}>
+                        <span className={`inline-block w-2 h-2 rounded-full mr-1 ${room.order_status === 'completed' ? 'bg-gray-500' : 'bg-blue-600'}`}></span>
                         {room.product.productName}
                       </p>
                     )}
                     
                     <div className="flex items-center">
-                      <p className="text-sm text-gray-500 truncate">
+                      <p className={`text-sm truncate ${room.order_status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-500'}`}>
                         {room.last_message?.message ? (
                           <span>{room.last_message.message}</span>
                         ) : (

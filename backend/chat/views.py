@@ -319,7 +319,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             if is_post_checkout:
                 try:
                     # Create an initial message from the customer to the farmer with product name in bold
-                    initial_message = f"<strong>{product.productName}</strong>\n\nHello! I've just purchased {quantity} {quantity > 1 and 'units' or 'unit'} of {product.productName}. I'd like to discuss delivery options and any other details about my order."
+                    initial_message = f"{product.productName}\n\nHello! I've just purchased {quantity} {quantity > 1 and 'units' or 'unit'} of {product.productName}. I'd like to discuss delivery options and any other details about my order."
                     
                     # Save the message
                     message = ChatMessage.objects.create(
@@ -341,7 +341,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             if product and not is_post_checkout:
                 product_name = product.productName
                 initial_message = (
-                    f"<strong>{product_name}</strong>\n\n"
+                    f"{product_name}\n\n"
                     f"Hi, I'm interested in purchasing {quantity} unit(s) "
                     f"of {product_name}. Can you provide more information about it?"
                 )

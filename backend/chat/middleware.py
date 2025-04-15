@@ -50,7 +50,15 @@ class JWTAuthMiddleware(BaseMiddleware):
             logger.warning("No token provided for WebSocket connection")
             scope["user"] = None
         
-        return await super().__call__(scope, receive, send)
+        try:
+            return await super().__call__(scope, receive, send)
+        except AttributeError as e:
+            # Handle the case where user might be None
+            logger.error(f"AttributeError in middleware: {str(e)}")
+            # Return a close message for the WebSocket
+            if scope["type"] == "websocket":
+                await send({"type": "websocket.close", "code": 4000})
+            return
     
     @database_sync_to_async
     def get_user(self, user_id):
