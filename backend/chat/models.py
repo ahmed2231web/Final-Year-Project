@@ -1,7 +1,7 @@
 from django.db import models
 from users.models import CustomUser
 from products.models import Product
-from orders.models import OrderStatus
+from orders.models import OrderStatus, Order
 
 # Get the first user as a default (will be used only for migration)
 def get_default_user():
@@ -43,6 +43,14 @@ class ChatRoom(models.Model):
     # Track unread messages
     has_unread_customer = models.BooleanField(default=False)
     has_unread_farmer = models.BooleanField(default=False)
+    # Link to order if one exists
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='chat_room'
+    )
     # Order status tracking
     order_status = models.CharField(
         max_length=20,

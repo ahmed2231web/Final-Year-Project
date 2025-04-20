@@ -64,3 +64,30 @@ export async function getProductsByCategory(category) {
         return []; // Return empty array on error
     }
 }
+
+/**
+ * Fetches a specific product by ID
+ * @param {string|number} productId - ID of the product to fetch
+ * @returns {Promise<Object>} Product object
+ */
+export async function getProductById(productId) {
+    try {
+        // Get authentication token if available (for authenticated users)
+        const token = authService.getToken();
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        // Fetch the specific product from the API
+        const response = await axios.get(`${API_URL}/products/${productId}/`, { headers });
+        
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching product with ID ${productId}:`, error);
+        
+        // If it's a 404, the product doesn't exist
+        if (error.response?.status === 404) {
+            throw new Error('Product not found');
+        }
+        
+        throw error; // Propagate the error for handling in the component
+    }
+}

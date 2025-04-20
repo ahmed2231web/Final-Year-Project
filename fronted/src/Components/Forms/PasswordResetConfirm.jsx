@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Image from '../../ui/Image';
+import Button from '../../ui/Button';
+import { Link } from 'react-router-dom';
 
 // Base URL for API requests
 const API_URL = import.meta.env.VITE_BACKEND_DOMAIN;
@@ -92,37 +95,57 @@ const PasswordResetConfirm = () => {
   };
 
   return (
-    <div className="reset-password">
-      <h2>Reset Your Password</h2>
-      {message && <p className="success">{message}</p>}
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="new_password">New Password:</label>
-          <input
-            type="password"
-            id="new_password"
-            name="new_password"
-            value={formData.new_password}
-            onChange={handleChange}
-            required
-          />
+    <div className="bg-[#0A690E] min-h-screen flex flex-col md:flex-row items-center justify-evenly">
+      <Image />
+      <div className="w-full max-w-md px-4 mt-10">
+        <div className="text-center mb-6">
+          <h2 className="text-white text-l">Reset Your Password</h2>
         </div>
-        <div>
-          <label htmlFor="re_new_password">Confirm New Password:</label>
-          <input
-            type="password"
-            id="re_new_password"
-            name="re_new_password"
-            value={formData.re_new_password}
-            onChange={handleChange}
-            required
-          />
+        <Button variant="navlink" />
+        <div className="mb-4 w-full bg-[#0A690E] p-8">
+          {message && <div className="text-green-500 text-sm bg-green-100 p-3 rounded-lg mb-4">{message}</div>}
+          {error && <div className="text-red-500 text-sm bg-red-100 p-3 rounded-lg mb-4">{error}</div>}
+          <form onSubmit={handleSubmit} className="space-y-6 w-full">
+            <div>
+              <label htmlFor="new_password" className="block text-sm font-normal text-white mb-3">New Password:</label>
+              <input
+                type="password"
+                id="new_password"
+                name="new_password"
+                required
+                value={formData.new_password}
+                onChange={handleChange}
+                className="w-full max-w-xl rounded-full border border-stone-200 px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
+                placeholder="Enter new password"
+              />
+            </div>
+            <div>
+              <label htmlFor="re_new_password" className="block text-sm font-normal text-white mb-3">Confirm New Password:</label>
+              <input
+                type="password"
+                id="re_new_password"
+                name="re_new_password"
+                required
+                value={formData.re_new_password}
+                onChange={handleChange}
+                className="w-full max-w-xl rounded-full border border-stone-200 px-6 py-3 text-sm placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400"
+                placeholder="Confirm new password"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button variant="button" className="bg-yellow-400" disabled={isLoading}>
+                {isLoading ? "Resetting..." : "Reset Password"}
+              </Button>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-300">
+                Remembered your password?{' '}
+                <Link to="/login" className="font-medium text-white hover:text-green-300">Login</Link>
+              </p>
+            </div>
+          </form>
         </div>
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? "Resetting..." : "Reset Password"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

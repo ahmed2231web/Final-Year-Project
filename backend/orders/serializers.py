@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from chat.models import ChatRoom
+from .models import Order, OrderItem
+from products.models import Product
 
 class RecentOrderSerializer(serializers.ModelSerializer):
     """
@@ -23,6 +25,59 @@ class RecentOrderSerializer(serializers.ModelSerializer):
             'order_status',  # Current status of the order (new, active, completed)
             'created_at'     # Timestamp when the order was created
         ]
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    """
+    Serializer for order items.
+    
+    Includes product details and quantity information.
+    """
+    product_name = serializers.SerializerMethodField()
+    product_image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'product_name', 'product_image', 'quantity', 'price_at_order_time']
+    
+    def get_product_name(self, obj):
+        return obj.product.productName
+    
+    def get_product_image(self, obj):
+        if hasattr(obj.product, 'image') and obj.product.image:
+            return obj.product.image.url
+        return None
+
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for orders with Stripe payment integration.
+    
+    Includes nested serialization of order items and links to feedback if available.
+    """
+    items = OrderItemSerializer(many=True, read_only=True)
+    customer_name = serializers.SerializerMethodField()
+    has_feedback = serializers.SerializerMethodField()
+    chat_room_id = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'user', 'customer_name', 'total', 'status',
+            'created_at', 'updated_at', 'payment_intent_id',
+            'stripe_charge_id', 'items', 'has_feedback', 'chat_room_id'
+        ]
+        read_only_fields = ['payment_intent_id', 'stripe_charge_id']
+    
+    def get_customer_name(self, obj):
+        return obj.user.full_name if hasattr(obj.user, 'full_name') else obj.user.email
+    
+    def get_has_feedback(self, obj):
+        return hasattr(obj, 'feedback')
+    
+    def get_chat_room_id(self, obj):
+        try:
+            return obj.chat_room.room_id if hasattr(obj, 'chat_room') and obj.chat_room else None
+        except Exception:
+            return None
 
 class FarmerDashboardSerializer(serializers.Serializer):
     """

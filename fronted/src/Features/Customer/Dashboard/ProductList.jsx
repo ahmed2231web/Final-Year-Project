@@ -1,10 +1,13 @@
-import { FaLeaf, FaStar, FaShoppingCart, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaLeaf, FaStar, FaShoppingCart, FaMapMarkerAlt, FaInfoCircle } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useCart } from '../../../contexts/CartContext';
 
 /**
  * ProductList Component
  * Displays a grid of product cards with details and add to cart functionality
  */
-function ProductList({ products, addToCart }) {
+function ProductList({ products }) {
+  const { addToCart } = useCart();
   if (products.length === 0) {
     return (
       <div className="col-span-full text-center py-10">
@@ -27,8 +30,8 @@ function ProductList({ products, addToCart }) {
           key={product.id} 
           className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
         >
-          {/* Product Image */}
-          <div className="relative">
+          {/* Product Image with Link */}
+          <Link to={`/products/${product.id}`} className="relative block">
             <img 
               src={product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'} 
               alt={product.productName} 
@@ -52,12 +55,14 @@ function ProductList({ products, addToCart }) {
                 {product.discount}% OFF
               </div>
             )}
-          </div>
+          </Link>
           
           {/* Product Details */}
           <div className="p-4 flex-grow flex flex-col justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">{product.productName}</h3>
+              <Link to={`/products/${product.id}`} className="hover:text-green-600 transition-colors">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">{product.productName}</h3>
+              </Link>
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
               
               {/* Farmer Info with City */}
@@ -102,18 +107,30 @@ function ProductList({ products, addToCart }) {
               </div>
             </div>
             
-            {/* Add to Cart Button */}
-            <button 
-              onClick={() => addToCart(product)}
-              disabled={product.stockQuantity <= 0}
-              className={`w-full px-4 py-2 rounded-md transition-colors font-medium flex items-center justify-center
-                ${product.stockQuantity > 0 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                  : 'bg-gray-300 cursor-not-allowed text-gray-500'}`}
-            >
-              <FaShoppingCart className="mr-2" />
-              {product.stockQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-            </button>
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              {/* View Details Button */}
+              <Link 
+                to={`/products/${product.id}`}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium flex items-center justify-center"
+              >
+                <FaInfoCircle className="mr-2" />
+                Details
+              </Link>
+              
+              {/* Add to Cart Button */}
+              <button 
+                onClick={() => addToCart(product)}
+                disabled={product.stockQuantity <= 0}
+                className={`flex-1 px-4 py-2 rounded-md transition-colors font-medium flex items-center justify-center
+                  ${product.stockQuantity > 0 
+                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                    : 'bg-gray-300 cursor-not-allowed text-gray-500'}`}
+              >
+                <FaShoppingCart className="mr-2" />
+                {product.stockQuantity > 0 ? 'Add' : 'Out'}
+              </button>
+            </div>
           </div>
         </div>
       ))}

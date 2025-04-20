@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ProductList from './ProductList';
 import Cart from './Cart';
-import { FaShoppingCart, FaSearch } from 'react-icons/fa';
+import { FaShoppingCart, FaSearch, FaBoxOpen } from 'react-icons/fa';
 import { getAllProducts } from '../../../Services/apiCustomerProducts';
 import LoadingSpinner from '../../../Components/Common/LoadingSpinner';
 import authService from '../../../Services/autheServices';
+import { useCart } from '../../../contexts/CartContext';
 
 /**
  * Customer Dashboard Component
  * Displays products with filtering, search, and shopping cart functionality
  */
 function CustomerDashboard() {
-  const [cartItems, setCartItems] = useState([]);
-  const [showCart, setShowCart] = useState(false);
+  const { cartItems, showCart, toggleCart, setShowCart, addToCart, removeFromCart, updateQuantity, clearCart } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [products, setProducts] = useState([]);
@@ -55,55 +56,7 @@ function CustomerDashboard() {
     getUserData();
   }, []);
 
-  // Load cart items from localStorage on initial render and when userId changes
-  useEffect(() => {
-    const loadCartItems = () => {
-      try {
-        // If user is logged in, try to load user-specific cart
-        if (userId) {
-          const userCartKey = `agroConnectCart_${userId}`;
-          const savedUserCart = localStorage.getItem(userCartKey);
-          
-          if (savedUserCart) {
-            setCartItems(JSON.parse(savedUserCart));
-            return;
-          }
-        }
-        
-        // Fallback to general cart if no user-specific cart found
-        const savedCart = localStorage.getItem('agroConnectCart');
-        if (savedCart) {
-          const parsedCart = JSON.parse(savedCart);
-          setCartItems(parsedCart);
-          
-          // If user is now logged in, migrate the general cart to user-specific cart
-          if (userId) {
-            localStorage.setItem(`agroConnectCart_${userId}`, savedCart);
-            // Keep the general cart for now as a backup
-          }
-        }
-      } catch (err) {
-        console.error('Error loading cart:', err);
-        localStorage.removeItem('agroConnectCart');
-        if (userId) {
-          localStorage.removeItem(`agroConnectCart_${userId}`);
-        }
-      }
-    };
-    
-    loadCartItems();
-  }, [userId]);
 
-  // Save cart items to localStorage whenever they change
-  useEffect(() => {
-    // Always save to general cart for non-logged-in users
-    localStorage.setItem('agroConnectCart', JSON.stringify(cartItems));
-    
-    // If user is logged in, also save to user-specific cart
-    if (userId) {
-      localStorage.setItem(`agroConnectCart_${userId}`, JSON.stringify(cartItems));
-    }
-  }, [cartItems, userId]);
 
   // Fetch products from the API
   useEffect(() => {
@@ -128,50 +81,6 @@ function CustomerDashboard() {
 
     fetchProducts();
   }, []);
-
-  // Add product to cart
-  const addToCart = (product) => {
-    const existingItem = cartItems.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      setCartItems(cartItems.map(item => 
-        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-      ));
-    } else {
-      setCartItems([...cartItems, { ...product, quantity: 1 }]);
-    }
-  };
-
-  // Remove product from cart
-  const removeFromCart = (productId) => {
-    setCartItems(cartItems.filter(item => item.id !== productId));
-  };
-
-  // Update product quantity in cart
-  const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity < 1) {
-      removeFromCart(productId);
-      return;
-    }
-    
-    setCartItems(cartItems.map(item => 
-      item.id === productId ? { ...item, quantity: newQuantity } : item
-    ));
-  };
-
-  // Clear cart after checkout
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem('agroConnectCart');
-    if (userId) {
-      localStorage.removeItem(`agroConnectCart_${userId}`);
-    }
-  };
-
-  // Toggle cart visibility
-  const toggleCart = () => {
-    setShowCart(!showCart);
-  };
 
   // Filter products based on search term and category
   const filteredProducts = products.filter(product => {
@@ -205,18 +114,28 @@ function CustomerDashboard() {
           </div>
         </div>
         
-        <button 
-          onClick={toggleCart}
-          className="ml-6 relative p-3 text-gray-700 hover:text-green-600 transition-colors"
-          aria-label="Shopping Cart"
-        >
-          <FaShoppingCart className="w-7 h-7" />
-          {cartItems.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-              {cartItems.length}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center">
+          <Link 
+            to="/orders"
+            className="relative p-3 text-gray-700 hover:text-green-600 transition-colors mr-4"
+            aria-label="My Orders"
+          >
+            <FaBoxOpen className="w-6 h-6" />
+          </Link>
+          
+          <button 
+            onClick={toggleCart}
+            className="relative p-3 text-gray-700 hover:text-green-600 transition-colors"
+            aria-label="Shopping Cart"
+          >
+            <FaShoppingCart className="w-7 h-7" />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                {cartItems.length}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
       
       {/* Main Content */}
@@ -268,10 +187,6 @@ function CustomerDashboard() {
       <Cart 
         isOpen={showCart} 
         closeCart={toggleCart} 
-        cartItems={cartItems} 
-        removeFromCart={removeFromCart}
-        updateQuantity={updateQuantity}
-        clearCart={clearCart}
       />
     </div>
   );

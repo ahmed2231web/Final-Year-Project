@@ -3,6 +3,10 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
+from orders.stripe_webhook import stripe_webhook
+
+# Debug print for Stripe webhook secret
+print(f"Stripe Webhook Secret configured: {'Yes' if settings.STRIPE_WEBHOOK_SECRET else 'No'}")
 
 # Debug prints to confirm settings
 print("DEBUG:", settings.DEBUG)
@@ -17,6 +21,12 @@ urlpatterns = [
     path('api/chatbot/', include('ai_chatbot.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/orders/', include('orders.urls')),
+    path('api/reviews/', include('reviews.urls')),
+    
+    # Direct webhook URL for Stripe (to avoid 404 errors)
+    path('webhook/stripe/', stripe_webhook, name='stripe-webhook-direct'),
+    # Alternative URL format for Stripe webhooks
+    path('webhook/stripe', stripe_webhook, name='stripe-webhook-alt'),
 ]
 
 # Serve media files during development

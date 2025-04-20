@@ -20,6 +20,11 @@ SECRET_KEY = getenv("SECRET_KEY")
 # Gemini API Key
 GEMINI_API_KEY = getenv('GEMINI_API_KEY')
 
+# Stripe API Keys
+STRIPE_PUBLIC_KEY = getenv('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = getenv('STRIPE_WEBHOOK_SECRET')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -53,7 +58,8 @@ INSTALLED_APPS = [
     'products',
     'ai_chatbot',
     'chat',
-    'orders'
+    'orders',
+    'reviews',
 ]
 
 MIDDLEWARE = [

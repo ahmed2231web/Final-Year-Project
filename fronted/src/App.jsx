@@ -2,6 +2,7 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { CartProvider } from "./contexts/CartContext";
 import { Toaster } from "react-hot-toast";
 import AppLayout from "./Layouts/AppLayout";
 import FarmerLayout from "./Layouts/FarmerLayout";
@@ -15,6 +16,12 @@ import PasswordRecovery from "./Pages/Landing/PasswordRecovery";
 import PrivacyPolicy from "./Pages/Landing/PrivacyPolicy";
 import Signup from "./Pages/Landing/Signup";
 import TermsAndConditions from "./Pages/Landing/TermsAndConditions";
+import Checkout from "./Pages/Checkout";
+import OrderDetail from "./Pages/OrderDetail";
+import FarmerOrderManagement from "./Pages/FarmerOrderManagement";
+import FarmerOrdersPage from "./Pages/Farmer/Orders";
+import ProductDetail from "./Pages/ProductDetail";
+import OrderList from "./Pages/OrderList";
 
 import Dashboard from "./Features/Farmer/Dashboard/Dashboard";
 import Products from "./Features/Farmer/AllProducts/Products";
@@ -111,6 +118,18 @@ const router = createBrowserRouter([
         path: "/env-test",
         element: <EnvTest />,
       },
+      {
+        path: "/checkout",
+        element: <Checkout />,
+      },
+      {
+        path: "/orders/:orderId",
+        element: <OrderDetail />,
+      },
+      {
+        path: "/products/:productId",
+        element: <ProductDetail />,
+      },
     ],
   },
   {
@@ -153,6 +172,10 @@ const router = createBrowserRouter([
         path: "weather",
         element: <Weather />,
       },
+      {
+        path: "orders",
+        element: <FarmerOrdersPage />,
+      },
     ],
   },
   {
@@ -179,6 +202,14 @@ const router = createBrowserRouter([
         path: "chatbot",
         element: <CustomerChatbotPage />,
       },
+      {
+        path: "orders",
+        element: <OrderList />,
+      },
+      {
+        path: "orders/:orderId",
+        element: <OrderDetail />,
+      },
     ],
   },
 ]);
@@ -186,8 +217,10 @@ const router = createBrowserRouter([
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <CartProvider>
+        <RouterProvider router={router} />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </CartProvider>
       <Toaster
         position="top-center"
         gutter={24}

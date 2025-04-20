@@ -5,7 +5,7 @@ import { MdOutlineChat } from "react-icons/md";
 import { NavLink } from 'react-router-dom';
 import { AiOutlineOpenAI } from 'react-icons/ai';
 import { IoMdClose } from "react-icons/io";
-import { FaNewspaper } from 'react-icons/fa';
+import { FaNewspaper, FaBoxOpen } from 'react-icons/fa';
 import { TiWeatherPartlySunny } from "react-icons/ti";
 import authService from '../../Services/autheServices';
 import { getUnreadChatsInfo } from '../../Services/chatService';
@@ -122,6 +122,18 @@ export function Sidebar({ closeSidebar }) {
           }
         >
           <TiWeatherPartlySunny className="mr-3 text-2xl" /> Weather
+        </NavLink>
+
+        {/* Orders */}
+        <NavLink
+          to="/farmer/orders"
+          className={({ isActive }) =>
+            `flex items-center text-2xl font-agbaluma font-normal ${
+              isActive ? "bg-yellow-400 text-black rounded-full p-3" : "text-white hover:text-yellow-400"
+            }`
+          }
+        >
+          <FaBoxOpen className="mr-3 text-2xl" /> Orders
         </NavLink>
       </div>
     </div>

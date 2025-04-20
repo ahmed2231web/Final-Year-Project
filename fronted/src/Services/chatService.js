@@ -3,7 +3,7 @@
  */
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_BACKEND_DOMAIN || 'http://localhost:8000';
 
 /**
  * Fetches all chat rooms for the current user

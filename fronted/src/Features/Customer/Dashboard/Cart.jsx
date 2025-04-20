@@ -4,12 +4,15 @@ import { FaTimes, FaPlus, FaMinus, FaShoppingCart, FaArrowLeft } from 'react-ico
 import authService from '../../../Services/autheServices'; 
 import toast from 'react-hot-toast';
 import { createChatRoom } from '../../../Services/chatService';
+import { createPaymentIntent } from '../../../Services/orderService';
+import { useCart } from '../../../contexts/CartContext';
 
 /**
  * Cart Component
  * Displays a sliding cart panel with product items, quantity controls, and checkout options
  */
-function Cart({ isOpen, closeCart, cartItems, removeFromCart, updateQuantity, clearCart }) {
+function Cart({ isOpen, closeCart }) {
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
@@ -75,6 +78,13 @@ function Cart({ isOpen, closeCart, cartItems, removeFromCart, updateQuantity, cl
         return;
       }
 
+      // Validate cart items
+      if (!cartItems || cartItems.length === 0) {
+        toast.error('Your cart is empty. Please add items before checkout.');
+        setIsProcessing(false);
+        return;
+      }
+
       // Group cart items by farmer
       const farmerGroups = {};
       cartItems.forEach(item => {
@@ -88,6 +98,7 @@ function Cart({ isOpen, closeCart, cartItems, removeFromCart, updateQuantity, cl
           farmerGroups[farmerId].push({...item, farmer_id: farmerId});
         } else {
           console.error('Missing farmer information in cart item:', item);
+          toast.error(`Missing farmer information for ${item.productName}. Please try refreshing the page.`);
         }
       });
       
@@ -98,70 +109,100 @@ function Cart({ isOpen, closeCart, cartItems, removeFromCart, updateQuantity, cl
         return;
       }
       
-      // Create chat rooms and send initial messages for each farmer
-      const chatPromises = Object.entries(farmerGroups).map(async ([farmerId, items]) => {
-        try {
-          // For each farmer, create a chat room with their first product
-          const firstItem = items[0];
-          
-          const roomData = {
-            customer: customerId,
-            farmer: farmerId,
-            product: firstItem.id,
-            quantity: firstItem.quantity,
-            is_post_checkout: true
-          };
-          
-          // Create or get existing chat room
-          const chatRoom = await createChatRoom(roomData, freshToken);
-          
-          return chatRoom;
-        } catch (error) {
-          console.error('Error creating chat room:', error);
-          return null;
+      // Process each farmer group as a separate order with Stripe payment
+      // For simplicity, we'll process the first farmer group only in this implementation
+      // In a production environment, you might want to handle multiple farmers in a single checkout
+      const [farmerId, items] = Object.entries(farmerGroups)[0];
+      const firstItem = items[0];
+      
+      // Calculate accurate prices for each item
+      const itemsWithPrices = items.map(item => {
+        const price = calculateItemPrice(item);
+        // Ensure product_id is properly formatted
+        const productId = item.id || (item.product ? item.product.id : null);
+        
+        if (!productId) {
+          console.error('Missing product ID in item:', item);
+          toast.error('Error: Missing product information. Please try again.');
         }
-      });
-      
-      // Wait for all chat rooms to be created
-      const createdChatRooms = await Promise.all(chatPromises);
-      const successfulRooms = createdChatRooms.filter(room => room !== null);
-      
-      // Store order information for future implementation
-      const orderSummary = Object.entries(farmerGroups).map(([farmerId, items]) => {
-        const firstItem = items[0];
+        
         return {
-          farmerId: farmerId,
-          farmerName: firstItem.farmer_name || 'Farmer',
-          products: items.map(item => ({
-            id: item.id,
-            name: item.productName,
-            quantity: item.quantity,
-            price: item.price
-          }))
+          product_id: productId,
+          quantity: parseInt(item.quantity, 10),
+          price: parseFloat(price.toFixed(2))
         };
       });
       
-      // Store in localStorage for potential later use
-      localStorage.setItem('last_order_summary', JSON.stringify(orderSummary));
+      const calculatedTotal = itemsWithPrices.reduce(
+        (total, item) => total + (item.price * item.quantity), 
+        0
+      );
       
-      // Close the cart modal
-      closeCart();
+      // Log the first item to debug what's available
+      console.log('First cart item details:', items[0]);
       
-      // If chat rooms were created, redirect to the first one
-      if (successfulRooms.length > 0) {
-        const firstRoom = successfulRooms[0];
-        localStorage.setItem('last_chat_room', firstRoom.room_id);
-        // Redirect directly to chat with the farmer without an alert
-        navigate(`/customer/chat/${firstRoom.room_id}`);
-      } else {
-        toast.success('Your order has been placed successfully!');
-        // If no chat rooms were created, redirect to dashboard
-        navigate('/customer/dashboard');
+      // Prepare order data for Stripe payment - simplified for the backend API
+      // The backend expects a direct product_id and quantity, not an array of items
+      const orderData = {
+        farmer_id: farmerId,
+        product_id: items[0].id, // Use the direct ID from the item
+        quantity: items[0].quantity
+      };
+      
+      console.log('Preparing order data for payment intent:', orderData);
+      
+      // Log before calling createPaymentIntent
+      console.log('Calling createPaymentIntent in Cart.jsx with orderData:', orderData);
+      
+      try {
+        // Create payment intent with Stripe
+        const paymentData = await createPaymentIntent(orderData, freshToken);
+        
+        if (!paymentData || !paymentData.client_secret) {
+          throw new Error('Invalid payment data received from server');
+        }
+        
+        console.log('Payment intent created successfully in Cart.jsx, order_id:', paymentData.order_id);
+        
+        // Store client secret, order ID, farmer_id, and product_id for checkout page
+        localStorage.setItem('payment_intent_client_secret', paymentData.client_secret);
+        localStorage.setItem('current_order_id', paymentData.order_id);
+        localStorage.setItem('farmer_id', farmerId); // Store farmer_id for checkout page
+        localStorage.setItem('product_id', items[0].id); // Store product_id for checkout page
+        
+        // Store order summary for checkout page
+        const orderSummary = {
+          items: items.map(item => ({
+            id: item.id,
+            name: item.productName,
+            quantity: item.quantity,
+            price: calculateItemPrice(item)
+          })),
+          totalPrice: parseFloat(totalPrice.toFixed(2)),
+          shippingCost: parseFloat(shippingCost.toFixed(2)),
+          totalWithShipping: parseFloat(totalWithShipping.toFixed(2))
+        };
+        localStorage.setItem('last_order_summary', JSON.stringify(orderSummary));
+        
+        toast.success('Redirecting to checkout...');
+        
+        // Close cart and navigate to checkout page
+        closeCart();
+        navigate('/checkout');
+        
+        // Clear cart only after successful payment intent creation and navigation
+        clearCart();
+      } catch (stripeError) {
+        console.error('Stripe payment error:', stripeError);
+        console.error('Error response:', stripeError.response?.data);
+        toast.error(
+          'Payment processing failed: ' + 
+          (stripeError.response?.data?.detail || 
+           stripeError.response?.data?.error || 
+           stripeError.message || 
+           'Please try again')
+        );
       }
-      
-      // Clear the cart
-      clearCart();
-
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error('Failed to process your order. Please try again.');
