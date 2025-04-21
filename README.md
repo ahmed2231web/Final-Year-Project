@@ -6,6 +6,7 @@
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Google Gemini](https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![Stripe](https://img.shields.io/badge/Stripe-008CDD?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com/)
 
 ## 🎯 Project Overview
 AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap between farmers, buyers, and agricultural service providers. Our mission is to revolutionize the agricultural marketplace by providing a seamless, digital platform for trading agricultural products, equipment, and services.
@@ -30,6 +31,7 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - **Language:** Python 3.x - Clean and maintainable codebase
 - **AI Models:** TensorFlow - Deep learning for image classification
 - **LLM Integration:** Google Gemini API - Advanced conversational AI
+- **Payment Processing:** Stripe API - Secure payment integration
 
 ### 🎨 Frontend Development
 - **Framework:** React.js - Dynamic and responsive UI
@@ -45,12 +47,20 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 │   ├── AgroConnect/       # Core Django application
 │   ├── users/             # User management system
 │   ├── products/          # Product management system
+│   ├── orders/            # Order management system with Stripe payment integration
+│   ├── reviews/           # Review management system
+│   ├── chat/              # Real-time communication system
 │   ├── ai_chatbot/        # AI chatbot with image disease detection
+│   ├── admin-interface/   # Customized admin interface
 │   ├── manage.py         # Django CLI
 │   └── requirements.txt  # Python dependencies
 │
 └── 🎨 fronted/
     ├── src/             # React components & logic
+    │   ├── Components/  # Reusable UI components
+    │   │   ├── Checkout/ # Stripe checkout components
+    │   ├── Features/    # Feature-specific components
+    │   └── Pages/       # Application pages
     ├── public/          # Static assets
     └── package.json     # Node.js configuration
 ```
@@ -94,6 +104,21 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - Cross-browser compatibility
 - Optimized performance
 
+### 🛒 Payment System
+- Secure payment processing with Stripe
+- Real-time payment status updates
+- Order tracking and management
+- Webhook integration for payment events
+- Support for payment intents and refunds
+- PCI-compliant checkout experience
+
+### 🎛️ Admin Interface
+- Customized Django admin interface
+- Enhanced UI/UX for administrators
+- Streamlined content management
+- Branded admin experience
+- Intuitive dashboard and analytics
+
 ## 🚀 Getting Started
 
 ### 📋 Prerequisites
@@ -101,6 +126,7 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - Node.js (LTS version)
 - PostgreSQL database
 - Git
+- Stripe account (for payment processing)
 
 ### ⚙️ Backend Setup
 1. Clone and enter the repository:
@@ -120,11 +146,13 @@ pip install -r requirements.txt
 - Copy `.env.example` to `.env`
 - Update database and API credentials
 - Add your Google Gemini API key to enable the chatbot
+- Configure your Stripe API keys (public and secret)
 
 4. Initialize database:
 ```bash
 python manage.py migrate
 python manage.py createsuperuser
+python manage.py collectstatic  # Gather static files for admin interface
 ```
 
 5. Launch server:
