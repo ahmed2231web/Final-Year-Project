@@ -62,6 +62,8 @@ INSTALLED_APPS = [
     'reviews',
 ]
 
+# Middlware is used to process requests and response globally before they the view
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', # cors middleware
     'django.middleware.security.SecurityMiddleware',
@@ -188,7 +190,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Base URL for absolute URLs
-BASE_URL = 'http://localhost:8000'
+BASE_URL = getenv('BASE_URL')
 
 # Use Cloudinary storage for media files
 # DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

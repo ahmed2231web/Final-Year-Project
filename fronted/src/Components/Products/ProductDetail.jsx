@@ -111,34 +111,7 @@ const ProductDetail = () => {
           <FaArrowLeft className="mr-2" /> Back to Products
         </button>
         
-        <div className="flex items-center gap-3">
-          {/* View Cart Button */}
-          <button 
-            onClick={toggleCart}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors"
-            aria-label="View Cart"
-          >
-            <FaShoppingBag className="w-5 h-5" />
-            <span>View Cart</span>
-            {cartItems.length > 0 && (
-              <span className="bg-white text-green-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {cartItems.length}
-              </span>
-            )}
-          </button>
-          
-          {/* Checkout Button */}
-          {cartItems.length > 0 && (
-            <button 
-              onClick={() => navigate('/customer/dashboard/cart')}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-              aria-label="Proceed to Checkout"
-            >
-              <FaCreditCard className="w-5 h-5" />
-              <span>Checkout</span>
-            </button>
-          )}
-        </div>
+        {/* No buttons here as per requirements */}
       </div>
       
       {/* Floating Cart Button */}
@@ -214,74 +187,47 @@ const ProductDetail = () => {
             <p className="text-gray-700">{product.description}</p>
           </div>
           
-          {/* Stock Status */}
-          <div className="mb-6">
-            <span className={`text-sm ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-500'} font-medium`}>
-              {product.stockQuantity > 0 
-                ? `In Stock (${product.stockQuantity} available)` 
-                : 'Out of Stock'}
-            </span>
-          </div>
+          {/* Stock Status is now shown as a badge above */}
           
-          {/* Quantity Selector and Add to Cart */}
-          {product.stockQuantity > 0 && (
-            <div className="flex items-center mb-6">
-              <label htmlFor="quantity" className="mr-3 text-gray-700">Quantity:</label>
-              <input 
-                type="number" 
-                id="quantity"
-                min="1"
-                max={product.stockQuantity}
-                value={quantity}
-                onChange={handleQuantityChange}
-                className="w-16 px-2 py-1 border border-gray-300 rounded-md text-center"
-              />
-              <div className="flex flex-wrap gap-2">
-                <button 
-                  onClick={handleAddToCart}
-                  className="ml-4 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors font-medium flex items-center"
-                >
-                  <FaShoppingCart className="mr-2" />
-                  Add to Cart
-                </button>
-                <button 
-                  onClick={handleCheckout}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium flex items-center"
-                >
-                  <FaCreditCard className="mr-2" />
-                  Buy Now
-                </button>
-              </div>
+          {/* Stock Status Badge */}
+          {product.stockQuantity > 0 ? (
+            <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              In Stock ({product.stockQuantity} available)
+            </div>
+          ) : (
+            <div className="inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Out of Stock
             </div>
           )}
           
-          {/* Additional Product Details */}
+          {/* Product Category */}
           <div className="border-t border-gray-200 pt-6 mt-6">
             <h2 className="text-xl font-semibold mb-4">Product Details</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-gray-600">Category:</p>
-                <p className="font-medium">{product.category}</p>
+            <div className="flex items-center">
+              <div className="bg-green-100 rounded-full p-2 mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17A3 3 0 015 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clipRule="evenodd" />
+                  <path d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z" />
+                </svg>
               </div>
               <div>
-                <p className="text-gray-600">Weight/Size:</p>
-                <p className="font-medium">{product.weight || 'Not specified'}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Harvest Date:</p>
-                <p className="font-medium">{product.harvestDate || 'Not specified'}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Expiry Date:</p>
-                <p className="font-medium">{product.expiryDate || 'Not specified'}</p>
+                <p className="text-gray-600 text-sm">Category</p>
+                <p className="font-medium text-gray-800">{product.category || 'Not specified'}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Product Feedback Section */}
-      <div className="mt-12">
+      {/* Enhanced Product Feedback Section */}
+      <div className="mt-12 bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Customer Reviews & Feedback</h2>
         <ProductFeedback productId={productId} />
       </div>
     </div>

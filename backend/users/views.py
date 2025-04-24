@@ -1,18 +1,19 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.generics import ListAPIView
-from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
-from django.conf import settings
-from django.core.mail import send_mail
-from djoser.utils import encode_uid, decode_uid
 import logging
-from .permissions import IsFarmer
-from .signals import is_temp_email_domain
 from .models import NewsArticle
+from django.conf import settings
+from rest_framework import status
+from .permissions import IsFarmer
+from django.core.mail import send_mail
+from rest_framework.views import APIView
+from .signals import is_temp_email_domain
+from rest_framework.response import Response
 from .serializers import NewsArticleSerializer
+from django.contrib.auth import get_user_model
+from rest_framework.generics import ListAPIView
+from djoser.utils import encode_uid, decode_uid
+from djoser import utils
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth.tokens import default_token_generator
 
 # Configure module logger
 logger = logging.getLogger(__name__)
@@ -362,6 +363,96 @@ class UserTypeView(APIView):
             "user_id": request.user.id,          # User's database ID
             "full_name": request.user.full_name   # User's full name for display
         }, status=status.HTTP_200_OK)
+
+
+class ResendActivationEmailView(APIView):
+    """
+    API view for resending activation emails to users who haven't activated their accounts.
+    
+    This view handles POST requests from users who need a new activation email,
+    typically because their original activation email was lost or expired.
+    """
+    # Allow anyone to access this endpoint (users aren't authenticated yet)
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        """
+        Handle POST requests to resend an activation email.
+        
+        Args:
+            request: The HTTP request containing the user's email
+            
+        Returns:
+            Response: JSON response indicating success or failure
+        """
+        # Extract email from request data
+        email = request.data.get('email')
+        
+        # Validate email is provided
+        if not email:
+            return Response(
+                {"error": "Email is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Log the resend attempt for audit purposes
+        logger.info(f"Activation email resend request for: {email}")
+        
+        try:
+            # Find the user in the database
+            user = User.objects.get(email=email)
+            
+            # Check if user is already active
+            if user.is_active:
+                logger.info(f"User {email} is already active, no need to resend activation")
+                return Response(
+                    {"message": "Your account is already activated. You can log in."}, 
+                    status=status.HTTP_200_OK
+                )
+                
+            # Generate new activation token and encoded user ID
+            uid = utils.encode_uid(user.pk)
+            token = default_token_generator.make_token(user)
+            
+            # Build the activation URL
+            activation_url = f"{settings.FRONTEND_DOMAIN}/activate/{uid}/{token}/"
+            
+            # Prepare email content
+            subject = "Activate Your Account"
+            message = f"You're receiving this email because you requested a new activation link for {settings.SITE_NAME}.\n \nClick the link to activate your account: {activation_url}"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [user.email]
+            
+            # Check if the user has a temporary/disposable email domain
+            is_temp = is_temp_email_domain(user.email)
+            
+            # Send the activation email
+            send_mail(subject, message, from_email, recipient_list, fail_silently=is_temp)
+            
+            # Log successful email sending
+            logger.info(f"Activation email resent to {email}")
+            
+            # Return success response
+            return Response(
+                {"message": "Activation email has been sent. Please check your inbox."}, 
+                status=status.HTTP_200_OK
+            )
+            
+        except User.DoesNotExist:
+            # For security reasons, don't reveal that the email doesn't exist
+            # Instead, return a generic success message
+            logger.warning(f"Activation resend attempted for non-existent email: {email}")
+            return Response(
+                {"message": "If your email exists in our system, an activation link has been sent."}, 
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            # Log any other errors that occur
+            logger.error(f"Failed to resend activation email to {email}: {str(e)}")
+            return Response(
+                {"error": "An error occurred. Please try again later."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class NewsArticleListView(ListAPIView):
     """

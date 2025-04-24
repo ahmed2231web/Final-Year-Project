@@ -1,4 +1,4 @@
-import os
+# import os
 import logging
 from google import genai
 from google.genai import types
@@ -21,11 +21,11 @@ def get_gemini_response(disease, user_query=None):
     
     # Create the prompt based on whether there's a user query or not
     if user_query:
-        prompt = f"""Please respond in Simple and understandable English language or Urdu if user specificly asks for it.
+        prompt = f"""Please respond in Simple and understandable English language or Urdu language if user specificly asks for it.
         The wheat plant has been detected with {disease}. User asks: {user_query}. 
-        Provide a detailed but concise response about this specific query related to the detected disease. Also add precautions to clean the thing take care of it and things like that."""
+        Provide a detailed but concise response about this specific query related to the detected disease. Also add precautions on how to clean the thing take care of it and things related to that."""
     else:
-        prompt = f"""Please respond in Simple and understandable English language or Urdu if user specificly asks for it.
+        prompt = f"""Please respond in Simple and understandable English language or Urdu language if user specificly asks for it.
         A wheat plant has been detected with {disease}. 
         Provide a brief overview of this disease, its impact on wheat crops, and basic management recommendations. 
         Keep the response concise but informative."""

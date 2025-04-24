@@ -4,7 +4,7 @@ from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
-from .models import ChatRoom, ChatMessage, ChatMessageImage, OrderStatus
+from .models import ChatRoom, ChatMessage, ChatMessageImage #OrderStatus
 import base64
 import uuid
 from django.core.files.base import ContentFile
@@ -25,6 +25,7 @@ Handles typing indicators and order status updates
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        # Handles initial connection with JWT auth and room access checks
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'chat_{self.room_id}'
         
@@ -65,7 +66,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             
             # User-specific notification group has been removed
-            
             await self.accept()
             
             # Mark messages as read when user connects to room
@@ -81,6 +81,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close(code=4000)
 
     async def disconnect(self, close_code):
+        # Cleans up group memberships on disconnect
         try:
             # Leave room group
             if hasattr(self, 'room_group_name'):
@@ -88,8 +89,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     self.room_group_name,
                     self.channel_name
                 )
-            
-            # User-specific notification group code has been removed
             
             # Remove user from active users set
             if hasattr(self, 'user') and hasattr(self, 'room_id'):
@@ -99,6 +98,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.error(f"Error in disconnect: {str(e)}")
     
     async def receive(self, text_data):
+        # Processes incoming messages (text/images/status updates)
         try:
             data = json.loads(text_data)
             
@@ -112,7 +112,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'is_typing': data['is_typing']
                     }
                 )
-                return
+                return # The return exits the method immediately after broadcasting the typing status
             
             # Handle order status update
             if 'order_status' in data:
@@ -155,7 +155,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 room = await self.update_room_for_new_order(self.room_id)
             
 
-            
             # Get all image URLs for the message
             all_image_urls = await self.get_message_image_urls(message)
             

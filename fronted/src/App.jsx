@@ -43,6 +43,7 @@ import FarmerChatRoom from "./Features/Farmer/Chat/FarmerChatRoom";
 
 import ActivationPending from "./Components/Forms/ActivationPending";
 import ActivateAccount from "./Components/Forms/ActivateAccount";
+import ResendActivation from "./Components/Forms/ResendActivation";
 import ForgotPassword from "./Components/Forms/ForgotPassword";
 import PasswordResetConfirm from "./Components/Forms/PasswordResetConfirm";
 
@@ -93,6 +94,10 @@ const router = createBrowserRouter([
       {
         path: "/activation-pending",
         element: <ActivationPending />
+      },
+      {
+        path: "/resend-activation",
+        element: <ResendActivation />
       },
       {
         path: "/activate/:uid/:token/",

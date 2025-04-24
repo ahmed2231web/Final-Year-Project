@@ -1,6 +1,6 @@
 from django.db import models
-from django.conf import settings
-from cloudinary.models import CloudinaryField
+# from django.conf import settings
+# from cloudinary.models import CloudinaryField
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal

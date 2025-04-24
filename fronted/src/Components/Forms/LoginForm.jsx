@@ -10,6 +10,7 @@ function LoginForm() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    rememberMe: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -46,9 +47,10 @@ function LoginForm() {
 
   const handleChange = (e) => {
     setError("");
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   };
 
@@ -58,10 +60,10 @@ function LoginForm() {
     setError("");
 
     try {
-      // Pass email and password separately to the login function
-      await authService.login(formData.email, formData.password);
+      // Pass email, password, and rememberMe to the login function
+      await authService.login(formData.email, formData.password, formData.rememberMe);
       
-      setFormData({ email: "", password: "" });
+      setFormData({ email: "", password: "", rememberMe: false });
       toast.success("Login successful!");
       
       // Dispatch auth state change event
@@ -141,12 +143,14 @@ function LoginForm() {
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <input
-            id="remember-me"
-            name="remember-me"
+            id="rememberMe"
+            name="rememberMe"
             type="checkbox"
+            checked={formData.rememberMe}
+            onChange={handleChange}
             className="h-4 w-4 text-green-500 focus:ring-green-500 border-gray-300 rounded"
           />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
+          <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-300">
             Remember me
           </label>
         </div>

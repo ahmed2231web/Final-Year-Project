@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from djoser import utils  # Djoser utilities for token handling
 import logging  
-import re
+# import re
 import socket
 
 # Configure module logger

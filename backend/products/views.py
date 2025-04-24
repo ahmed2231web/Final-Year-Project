@@ -92,6 +92,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         This method verifies that only the farmer who created the product can delete it,
         preventing unauthorized deletion of products by other users.
+
+        Handles the actual deletion logic of a product instance.
         
         Args:
             instance: The Product instance to be deleted
@@ -120,6 +122,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         This method extends the standard destroy method to provide better error handling
         and user-friendly error messages when product deletion fails.
+
+        Manages the HTTP request/response cycle for deletion.
         
         Args:
             request: The HTTP request
@@ -178,34 +182,34 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Return the serialized product data
         return Response(serializer.data)
     
-    @action(detail=True, methods=['get'])
-    def related_products(self, request, pk=None):
-        """
-        Get related products with the same category as the current product.
+    # @action(detail=True, methods=['get'])
+    # def related_products(self, request, pk=None):
+    #     """
+    #     Get related products with the same category as the current product.
         
-        This endpoint finds up to 5 other products in the same category as the
-        specified product, which can be used for "You might also like" or
-        "Similar products" sections in the product detail page.
+    #     This endpoint finds up to 5 other products in the same category as the
+    #     specified product, which can be used for "You might also like" or
+    #     "Similar products" sections in the product detail page.
         
-        Args:
-            request: The HTTP request
-            pk: The primary key (ID) of the product to find related items for
+    #     Args:
+    #         request: The HTTP request
+    #         pk: The primary key (ID) of the product to find related items for
             
-        Returns:
-            Response: JSON response containing related products
-        """
-        # Get the current product using the provided pk
-        product = self.get_object()
+    #     Returns:
+    #         Response: JSON response containing related products
+    #     """
+    #     # Get the current product using the provided pk
+    #     product = self.get_object()
         
-        # Find related products with the same category, excluding the current product
-        # Limit to 5 products to avoid overwhelming the UI
-        related = Product.objects.filter(category=product.category).exclude(id=product.id)[:5]
+    #     # Find related products with the same category, excluding the current product
+    #     # Limit to 5 products to avoid overwhelming the UI
+    #     related = Product.objects.filter(category=product.category).exclude(id=product.id)[:5]
         
-        # Serialize the related products
-        serializer = self.get_serializer(related, many=True)
+    #     # Serialize the related products
+    #     serializer = self.get_serializer(related, many=True)
         
-        # Return the serialized related products
-        return Response(serializer.data)
+    #     # Return the serialized related products
+    #     return Response(serializer.data)
 
 class CloudinaryDeleteView(APIView):
     """

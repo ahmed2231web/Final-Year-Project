@@ -116,7 +116,7 @@ function CustomerDashboard() {
         
         <div className="flex items-center">
           <Link 
-            to="/orders"
+            to="/customer/orders"
             className="relative p-3 text-gray-700 hover:text-green-600 transition-colors mr-4"
             aria-label="My Orders"
           >

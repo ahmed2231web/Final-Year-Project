@@ -3,6 +3,8 @@ ASGI config for AgroConnect project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
+Its primary role is to handle asynchronous web protocols, particularly WebSockets, in addition to traditional HTTP requests.
+
 For more information on this file, see
 https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
 """

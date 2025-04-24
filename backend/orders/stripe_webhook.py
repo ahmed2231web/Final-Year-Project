@@ -2,7 +2,7 @@ import stripe
 import json
 import logging
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse #, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from .models import Order, OrderStatus

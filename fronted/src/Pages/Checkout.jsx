@@ -6,6 +6,7 @@ import StripeCheckout from '../Components/Checkout/StripeCheckout';
 import { FaArrowLeft, FaShoppingBag } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import authService from '../Services/autheServices';
+import { getProductById } from '../Services/apiCustomerProducts';
 
 // Load Stripe outside of component to avoid recreating it on every render
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -51,6 +52,54 @@ const Checkout = () => {
           try {
             const parsedSummary = JSON.parse(storedOrderSummary);
             console.log('Parsed Order Summary:', parsedSummary);
+            
+            // Ensure each item has an image_url property
+            if (parsedSummary.items && Array.isArray(parsedSummary.items)) {
+              // Fetch product details for each item to get images
+              const fetchProductImages = async () => {
+                try {
+                  const enhancedItems = await Promise.all(parsedSummary.items.map(async (item) => {
+                    // If item already has image_url and it's valid, use it
+                    if (item.image_url && item.image_url !== 'https://via.placeholder.com/100') {
+                      return item;
+                    }
+                    
+                    // Try to get image from cart items in localStorage
+                    const cartItems = JSON.parse(localStorage.getItem('agroConnectCart') || '[]');
+                    const cartItem = cartItems.find(ci => ci.id === item.id || ci.id === item.product_id);
+                    
+                    if (cartItem && cartItem.imageUrl && cartItem.imageUrl !== 'https://via.placeholder.com/100') {
+                      return { ...item, image_url: cartItem.imageUrl };
+                    }
+                    
+                    // If not found in cart, try to fetch product details
+                    try {
+                      const productId = item.id || item.product_id;
+                      if (productId) {
+                        const productData = await getProductById(productId);
+                        if (productData && productData.imageUrl) {
+                          // Store image URL in localStorage for future use
+                          localStorage.setItem(`product_image_${productId}`, productData.imageUrl);
+                          return { ...item, image_url: productData.imageUrl };
+                        }
+                      }
+                    } catch (err) {
+                      console.error(`Error fetching product ${item.id || item.product_id}:`, err);
+                    }
+                    
+                    return item;
+                  }));
+                  
+                  parsedSummary.items = enhancedItems;
+                  setOrderSummary(parsedSummary);
+                } catch (err) {
+                  console.error('Error fetching product images:', err);
+                }
+              };
+              
+              fetchProductImages();
+            }
+            
             setOrderSummary(parsedSummary);
           } catch (e) {
             console.error('Error parsing order summary:', e);
@@ -113,14 +162,55 @@ const Checkout = () => {
             {orderSummary ? (
               <>
                 <div className="border-b pb-4 mb-4">
-                  <ul className="space-y-3">
+                  <ul className="space-y-4">
                     {orderSummary.items.map((item, index) => (
-                      <li key={index} className="flex justify-between">
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      <li key={index} className="flex items-center space-x-3">
+                        {/* Product Image */}
+                        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded overflow-hidden border">
+                          {item.image_url ? (
+                            <img 
+                              src={item.image_url} 
+                              alt={item.name || item.productName} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+                                
+                                // Try to fetch image from product if error occurs
+                                const productId = item.id || item.product_id;
+                                if (productId) {
+                                  getProductById(productId).then(productData => {
+                                    if (productData && productData.imageUrl) {
+                                      e.target.src = productData.imageUrl;
+                                      // Update the order summary with the new image URL
+                                      const updatedSummary = {...orderSummary};
+                                      const itemIndex = updatedSummary.items.findIndex(i => 
+                                        (i.id === productId || i.product_id === productId)
+                                      );
+                                      if (itemIndex >= 0) {
+                                        updatedSummary.items[itemIndex].image_url = productData.imageUrl;
+                                        setOrderSummary(updatedSummary);
+                                      }
+                                    }
+                                  }).catch(err => console.error('Error fetching product image:', err));
+                                }
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                              <span className="text-xs text-gray-500">Loading image...</span>
+                            </div>
+                          )}
                         </div>
-                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                        
+                        {/* Product Details */}
+                        <div className="flex-grow flex justify-between items-center">
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                          </div>
+                          <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
                       </li>
                     ))}
                   </ul>

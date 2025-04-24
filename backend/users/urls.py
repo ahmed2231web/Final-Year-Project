@@ -7,6 +7,7 @@ from .views import (
     FarmerAuthCheckView,
     UserTypeView,
     NewsArticleListView,
+    ResendActivationEmailView,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -26,6 +27,9 @@ urlpatterns = [
     # Auth check endpoints
     path('user/check-farmer/', FarmerAuthCheckView.as_view(), name='check-farmer-auth'),
     path('user/user-type/', UserTypeView.as_view(), name='get-user-type'),
+    
+    # URL for resending activation emails. Users can submit their email to receive a new activation link.
+    path('user/resend-activation/', ResendActivationEmailView.as_view(), name='resend-activation'),
     
     # News Articles endpoint
     path('news/', NewsArticleListView.as_view(), name='news-articles'),

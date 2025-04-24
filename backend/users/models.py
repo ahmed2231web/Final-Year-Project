@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import RegexValidator
-from django.utils import timezone
+# from django.utils import timezone
 
 import shortuuid
 
@@ -12,7 +12,6 @@ def generate_short_uuid():
     return shortuuid.uuid()[:10]  # Using first 10 chars for brevity
 
 # Custom user manager for handling user creation and superuser creation
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, phone_number, email, full_name, user_type, province=None, city=None, password=None, **extra_fields):
         '''
@@ -90,7 +89,7 @@ class CustomUser(AbstractBaseUser):
     # Phone number with format validation
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,14}$',
-        message="Phone number must be entered in the format: '+999999999'. Up to 14 digits allowed."
+        message="Phone number must be entered in the format: '+921234567890'. Up to 14 digits allowed."
     )
     phone_number = models.CharField(
         validators=[phone_regex],

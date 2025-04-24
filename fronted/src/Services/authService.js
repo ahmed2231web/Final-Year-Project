@@ -6,15 +6,17 @@ const API_URL = `${import.meta.env.VITE_BACKEND_DOMAIN}/auth`;
 // In-memory storage for user data
 let userData = null;
 
-// Initialize tokens from localStorage if available
+// Initialize tokens from storage (localStorage or sessionStorage)
 const getStoredAccessToken = () => {
-  const token = localStorage.getItem('access_token');
+  // Try to get token from localStorage first, then sessionStorage
+  const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
   console.log('Getting stored access token:', token ? 'Token exists' : 'No token');
   return token;
 };
 
 const getStoredRefreshToken = () => {
-  const token = localStorage.getItem('refresh_token');
+  // Try to get token from localStorage first, then sessionStorage
+  const token = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
   console.log('Getting stored refresh token:', token ? 'Token exists' : 'No token');
   return token;
 };
@@ -117,9 +119,10 @@ const authService = {
    * Login a user
    * @param {string} email - User email
    * @param {string} password - User password
+   * @param {boolean} rememberMe - Whether to remember the user's login
    * @returns {Promise} Promise object that resolves to the response data
    */
-  login: async (email, password) => {
+  login: async (email, password, rememberMe = false) => {
     try {
       console.log('login: Attempting login for email:', email);
       // First, get the JWT tokens
@@ -129,9 +132,21 @@ const authService = {
       });
       
       console.log('login: Login successful, storing tokens');
-      // Store tokens in localStorage for cross-tab persistence
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
+      // Store tokens based on rememberMe preference
+      const storage = rememberMe ? localStorage : sessionStorage;
+      
+      // Clear any existing tokens from both storages to avoid conflicts
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
+      
+      // Store tokens in the appropriate storage
+      storage.setItem('access_token', response.data.access);
+      storage.setItem('refresh_token', response.data.refresh);
+      
+      // Store rememberMe preference
+      localStorage.setItem('remember_me', rememberMe.toString());
       
       // Then, get the user data
       try {
@@ -179,25 +194,36 @@ const authService = {
    * @returns {Promise} Promise object that resolves to the response data
    */
   refreshToken: async () => {
+    const refreshToken = getStoredRefreshToken();
+    if (!refreshToken) {
+      console.log('refreshToken: No refresh token available');
+      throw new Error('No refresh token available');
+    }
+    
     try {
       console.log('refreshToken: Attempting to refresh token');
-      const refreshToken = getStoredRefreshToken();
-      if (!refreshToken) {
-        console.log('refreshToken: No refresh token available');
-        throw new Error('No refresh token available');
-      }
-      
       const response = await axios.post(`${API_URL}/jwt/refresh/`, {
         refresh: refreshToken
       });
       
       console.log('refreshToken: Token refresh successful');
-      localStorage.setItem('access_token', response.data.access);
+      
+      // Determine which storage to use based on remember_me preference
+      const rememberMe = localStorage.getItem('remember_me') === 'true';
+      const storage = rememberMe ? localStorage : sessionStorage;
+      
+      // Store the new access token in the appropriate storage
+      storage.setItem('access_token', response.data.access);
+      
       return response.data;
     } catch (error) {
-      console.error('Token refresh failed:', error);
-      // If refresh fails, logout
-      authService.logout();
+      console.error('refreshToken: Token refresh failed', error);
+      // Clear tokens on refresh failure from both storages
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
+      userData = null;
       throw error;
     }
   },
@@ -207,12 +233,18 @@ const authService = {
    */
   logout: () => {
     console.log('logout: Removing tokens and user data');
+    // Clear tokens from both storages
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    localStorage.removeItem('last_visited_page');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    
+    // Clear remember_me preference
+    localStorage.removeItem('remember_me');
+    
     userData = null;
     
-    // Dispatch auth state change event when user logs out
+    // Dispatch auth state change event
     window.dispatchEvent(new Event('auth-state-change'));
   },
 

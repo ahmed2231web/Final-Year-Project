@@ -1,9 +1,11 @@
 from rest_framework import serializers
 from .models import ChatRoom, ChatMessage, ChatMessageImage
-from users.models import CustomUser
-from products.models import Product
+# from users.models import CustomUser
+# from products.models import Product
 from users.serializers import UserCreateSerializer
 from products.serializers import ProductSerializer
+from django.utils import timezone
+# import datetime
 
 class ChatMessageImageSerializer(serializers.ModelSerializer):
     """
@@ -67,8 +69,6 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         """
         Returns a human-readable string representing the time since the order was created
         """
-        from django.utils import timezone
-        import datetime
         
         now = timezone.now()
         time_diff = now - obj.order_timestamp

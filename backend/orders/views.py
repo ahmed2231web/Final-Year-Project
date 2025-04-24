@@ -1,6 +1,6 @@
 import stripe
 from django.conf import settings
-from django.http import JsonResponse
+# from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from rest_framework.views import APIView
@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from chat.models import ChatRoom, ChatMessage
 from .models import Order, OrderItem, OrderStatus
-from .serializers import FarmerDashboardSerializer, RecentOrderSerializer, OrderSerializer, OrderItemSerializer
+from .serializers import RecentOrderSerializer, OrderSerializer #, OrderItemSerializer, FarmerDashboardSerializer, 
 from users.permissions import IsFarmer
 from users.models import CustomUser
 from products.models import Product

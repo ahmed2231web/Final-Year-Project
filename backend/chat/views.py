@@ -11,9 +11,8 @@ from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 from django.conf import settings
 import os
-
 from .models import ChatRoom, ChatMessage, ChatMessageImage, OrderStatus
-from .serializers import ChatRoomSerializer, ChatMessageSerializer, ChatMessageImageSerializer
+from .serializers import ChatRoomSerializer, ChatMessageSerializer #, ChatMessageImageSerializer
 from users.models import CustomUser
 from products.models import Product
 
@@ -46,6 +45,8 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return ChatRoom.objects.filter(
             Q(customer=user) | Q(farmer=user)
+            # SELECT * FROM chat_room 
+            # WHERE customer_id = {user.id} OR farmer_id = {user.id}
         ).order_by('-updated_at')
     
     def get_object(self):
@@ -54,6 +55,9 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         
         This allows us to use the UUID string as the lookup key instead of the primary key.
         """
+
+        # First tries to use lookup_url_kwarg (custom URL parameter name)
+        # Falls back to lookup_field (default: 'pk') if not specified
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
         
         assert lookup_url_kwarg in self.kwargs, (
@@ -437,14 +441,11 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
                 room.has_unread_farmer = False
             room.save()
             
-            # Notifications functionality has been removed
-            
             return Response(
                 {
                     "status": "success", 
                     "message": "All messages marked as read",
                     "messages_updated": updated,
-                    # "notifications_updated": notif_updated
                 },
                 status=status.HTTP_200_OK
             )
