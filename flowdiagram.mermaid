@@ -1,0 +1,125 @@
+flowchart TD
+    %% Main user types
+    Customer([Customer])
+    Farmer([Farmer])
+    
+    %% Authentication Flow
+    subgraph Authentication
+        Login[Login]
+        Register[Register]
+        Auth[Auth Service]
+        JWT{JWT Token}
+    end
+    
+    %% Product Management Flow
+    subgraph Products
+        ProductsList[Browse Products]
+        ProductDetail[View Product Details]
+        AddToCart[Add to Cart]
+        Cart[Shopping Cart]
+    end
+    
+    %% Order Process Flow
+    subgraph OrderProcess[Order Process]
+        Checkout[Checkout]
+        StripePayment[Payment Intent]
+        OrderCreation[Create Order]
+        OrderConfirmation[Order Confirmation]
+    end
+    
+    %% Order Fulfillment Flow
+    subgraph OrderFulfillment[Order Fulfillment]
+        OrderStatus{Order Status}
+        FarmerOrderView[Farmer Order View]
+        ShipOrder[Ship Order]
+        ReceiveOrder[Confirm Receipt]
+        OrderComplete[Complete Order]
+    end
+    
+    %% Feedback Flow
+    subgraph FeedbackSystem[Feedback System]
+        SubmitFeedback[Submit Feedback]
+        ViewFeedback[View Feedback]
+        FeedbackDB[(Feedback Data)]
+    end
+    
+    %% Communication Flow
+    subgraph Communication
+        ChatSystem[Chat System]
+        AIAssistant[AI Chatbot]
+        Notifications[Notifications]
+    end
+    
+    %% Backend APIs
+    subgraph BackendAPIs[Backend APIs]
+        AuthAPI["auth/ API"]
+        ProductsAPI["api/products/ API"]
+        OrdersAPI["api/orders/ API"]
+        ChatAPI["api/chat/ API"]
+        ChatbotAPI["api/chatbot/ API"]
+        ReviewsAPI["api/reviews/ API"]
+    end
+    
+    %% Database
+    Database[(Database)]
+    
+    %% Flow Connections - Authentication
+    Customer --> Login
+    Customer --> Register
+    Farmer --> Login
+    Farmer --> Register
+    Login --> Auth
+    Register --> Auth
+    Auth --> JWT
+    JWT --> AuthAPI
+    AuthAPI --> Database
+    
+    %% Flow Connections - Products
+    Customer --> ProductsList
+    ProductsList --> ProductDetail
+    ProductDetail --> AddToCart
+    AddToCart --> Cart
+    ProductsList --> ProductsAPI
+    ProductDetail --> ProductsAPI
+    ProductsAPI --> Database
+    
+    %% Flow Connections - Orders
+    Cart --> Checkout
+    Checkout --> StripePayment
+    StripePayment --> OrderCreation
+    OrderCreation --> OrderConfirmation
+    Checkout --> OrdersAPI
+    StripePayment --> OrdersAPI
+    OrdersAPI --> Database
+    
+    %% Flow Connections - Order Fulfillment
+    OrderConfirmation --> OrderStatus
+    Farmer --> FarmerOrderView
+    FarmerOrderView --> OrderStatus
+    OrderStatus -- Pending --> ShipOrder
+    ShipOrder --> OrderStatus
+    OrderStatus -- Shipped --> ReceiveOrder
+    ReceiveOrder --> OrderStatus
+    OrderStatus -- Delivered --> OrderComplete
+    FarmerOrderView --> OrdersAPI
+    ShipOrder --> OrdersAPI
+    ReceiveOrder --> OrdersAPI
+    
+    %% Flow Connections - Feedback
+    OrderComplete --> SubmitFeedback
+    SubmitFeedback --> FeedbackDB
+    ProductDetail --> ViewFeedback
+    ViewFeedback --> FeedbackDB
+    SubmitFeedback --> ReviewsAPI
+    ViewFeedback --> ReviewsAPI
+    ReviewsAPI --> Database
+    
+    %% Flow Connections - Communication
+    Customer --> ChatSystem
+    Farmer --> ChatSystem
+    Customer --> AIAssistant
+    ChatSystem --> Notifications
+    AIAssistant --> ChatbotAPI
+    ChatSystem --> ChatAPI
+    ChatAPI --> Database
+    ChatbotAPI --> Database

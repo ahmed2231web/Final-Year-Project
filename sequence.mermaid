@@ -1,0 +1,103 @@
+sequenceDiagram
+    actor Customer
+    actor Farmer
+    participant Frontend
+    participant AuthService
+    participant ProductService
+    participant CartContext
+    participant OrderService
+    participant FeedbackService
+    participant Backend
+    participant StripeAPI
+    
+    %% Authentication
+    Customer->>Frontend: Login with credentials
+    Frontend->>AuthService: login(email, password)
+    AuthService->>Backend: POST /auth/jwt/create/
+    Backend-->>AuthService: JWT tokens (access, refresh)
+    AuthService->>AuthService: Store tokens in localStorage
+    AuthService-->>Frontend: Authentication success
+    
+    %% Product Browsing
+    Customer->>Frontend: Browse products
+    Frontend->>ProductService: getProducts()
+    ProductService->>Backend: GET /api/products/products/
+    Backend-->>ProductService: Product list data
+    ProductService-->>Frontend: Display products
+    
+    %% View Product Details
+    Customer->>Frontend: Select product
+    Frontend->>ProductService: getProductById(productId)
+    ProductService->>Backend: GET /api/products/products/{id}/
+    Backend-->>ProductService: Product details
+    ProductService-->>Frontend: Display product details
+    
+    %% Add to Cart
+    Customer->>Frontend: Add to cart
+    Frontend->>CartContext: addToCart(product, quantity)
+    CartContext->>CartContext: Update cart in localStorage
+    CartContext-->>Frontend: Updated cart items
+    
+    %% Checkout Process
+    Customer->>Frontend: Proceed to checkout
+    Frontend->>OrderService: createPaymentIntent(orderData)
+    OrderService->>Backend: POST /api/orders/orders/create-payment-intent/
+    Backend->>StripeAPI: Create PaymentIntent
+    StripeAPI-->>Backend: PaymentIntent with client_secret
+    Backend-->>OrderService: PaymentIntent data
+    OrderService-->>Frontend: Show payment form
+    
+    %% Payment Processing
+    Customer->>Frontend: Enter payment details
+    Frontend->>StripeAPI: confirmCardPayment(clientSecret, cardDetails)
+    StripeAPI-->>Frontend: Payment authorized (not captured)
+    Frontend->>OrderService: Complete order
+    OrderService->>Backend: POST /api/orders/orders/
+    Backend-->>OrderService: Order created (status: pending)
+    OrderService-->>Frontend: Order confirmation
+    
+    %% Order Management (Farmer)
+    Farmer->>Frontend: View pending orders
+    Frontend->>OrderService: getFarmerOrders(token)
+    OrderService->>Backend: GET /api/orders/orders/
+    Backend-->>OrderService: List of orders
+    OrderService-->>Frontend: Display order list
+    
+    %% Ship Order (Farmer)
+    Farmer->>Frontend: Mark order as shipped
+    Frontend->>OrderService: shipOrder(orderId)
+    OrderService->>Backend: POST /api/orders/orders/{id}/ship/
+    Backend-->>OrderService: Updated order (status: shipped)
+    Backend->>Backend: Send notification to customer
+    
+    %% Order Delivery (Customer)
+    Customer->>Frontend: View order status
+    Frontend->>OrderService: getOrderById(orderId)
+    OrderService->>Backend: GET /api/orders/orders/{id}/
+    Backend-->>OrderService: Order details (status: shipped)
+    OrderService-->>Frontend: Display order status
+    
+    %% Confirm Receipt (Customer)
+    Customer->>Frontend: Confirm order received
+    Frontend->>OrderService: confirmOrderReceipt(orderId)
+    OrderService->>Backend: POST /api/orders/orders/{id}/confirm-receipt/
+    Backend-->>OrderService: Updated order (status: delivered)
+    
+    %% Payment Capture
+    Backend->>StripeAPI: Capture payment
+    StripeAPI-->>Backend: Payment captured
+    Backend->>Backend: Update order (status: completed)
+    
+    %% Customer Feedback
+    Customer->>Frontend: Submit product feedback
+    Frontend->>FeedbackService: submitFeedback(productId, rating, comment)
+    FeedbackService->>Backend: POST /api/reviews/product-reviews/
+    Backend-->>FeedbackService: Feedback saved
+    FeedbackService-->>Frontend: Feedback confirmation
+    
+    %% View Feedback (Future Customers)
+    Customer->>Frontend: View product feedback
+    Frontend->>FeedbackService: getProductFeedback(productId)
+    FeedbackService->>Backend: GET /api/reviews/product-reviews/?product={id}
+    Backend-->>FeedbackService: Feedback data
+    FeedbackService-->>Frontend: Display feedback
