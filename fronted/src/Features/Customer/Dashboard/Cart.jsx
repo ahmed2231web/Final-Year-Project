@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaPlus, FaMinus, FaShoppingCart, FaArrowLeft } from 'react-icons/fa';
-import authService from '../../../Services/autheServices'; 
+import authService from '../../../Services/authService'; 
 import toast from 'react-hot-toast';
 import { createChatRoom } from '../../../Services/chatService';
 import { createPaymentIntent } from '../../../Services/orderService';
@@ -145,9 +145,22 @@ function Cart({ isOpen, closeCart }) {
       // The backend expects a direct product_id and quantity, not an array of items
       const orderData = {
         farmer_id: farmerId,
-        product_id: items[0].id, // Use the direct ID from the item
+        product_id: items[0].id || items[0].product_id, // Use the direct ID from the item, with fallback
         quantity: items[0].quantity
       };
+      
+      // Validate the order data before proceeding
+      if (!orderData.farmer_id || !orderData.product_id || !orderData.quantity) {
+        console.error('Invalid order data:', orderData);
+        toast.error('Missing required product information. Please try again.');
+        setIsProcessing(false);
+        return;
+      }
+      
+      // Ensure product_id is a number if possible
+      if (typeof orderData.product_id === 'string' && !isNaN(orderData.product_id)) {
+        orderData.product_id = parseInt(orderData.product_id, 10);
+      }
       
       console.log('Preparing order data for payment intent:', orderData);
       
@@ -156,17 +169,52 @@ function Cart({ isOpen, closeCart }) {
       
       try {
         // Create payment intent with Stripe
-        const paymentData = await createPaymentIntent(orderData, freshToken);
+        console.log('Using token for payment intent:', freshToken ? 'Token exists' : 'No token');
+        console.log('About to create payment intent with data:', JSON.stringify(orderData));
+        const paymentData = await createPaymentIntent(orderData, freshToken.access || freshToken);
         
-        if (!paymentData || !paymentData.client_secret) {
-          throw new Error('Invalid payment data received from server');
+        console.log('Payment data received:', JSON.stringify(paymentData, null, 2));
+        
+        // The backend might return the client_secret directly or nested in a data object
+        let clientSecret = null;
+        let orderId = null;
+        
+        if (paymentData.client_secret) {
+          // Direct format
+          clientSecret = paymentData.client_secret;
+          orderId = paymentData.order_id;
+          console.log(`Found client_secret directly in response: ${clientSecret.substring(0, 10)}...`);
+        } else if (paymentData.payment_intent && paymentData.payment_intent.client_secret) {
+          // Nested in payment_intent object
+          clientSecret = paymentData.payment_intent.client_secret;
+          orderId = paymentData.id || paymentData.order_id;
+          console.log(`Found client_secret in payment_intent: ${clientSecret.substring(0, 10)}...`);
+        } else if (paymentData.id) {
+          // If we just got an order ID, we can use that
+          console.log('No client_secret found, using placeholder. Will redirect to order page.');
+          clientSecret = 'placeholder'; // We'll redirect to order details instead
+          orderId = paymentData.id;
+        }
+        
+        if (!clientSecret) {
+          console.error('Invalid payment data received:', JSON.stringify(paymentData, null, 2));
+          throw new Error('Invalid payment data received from server. Missing client_secret.');
+        }
+        
+        // Validate client secret format if not placeholder
+        if (clientSecret !== 'placeholder') {
+          // Client secret should be for a payment intent (pi_) or a setup intent (seti_)
+          if (!clientSecret.includes('_secret_')) {
+            console.error('Invalid client secret format received:', clientSecret.substring(0, 15));
+            throw new Error('Invalid client secret format received from server');
+          }
         }
         
         console.log('Payment intent created successfully in Cart.jsx, order_id:', paymentData.order_id);
         
         // Store client secret, order ID, farmer_id, and product_id for checkout page
-        localStorage.setItem('payment_intent_client_secret', paymentData.client_secret);
-        localStorage.setItem('current_order_id', paymentData.order_id);
+        localStorage.setItem('payment_intent_client_secret', clientSecret);
+        localStorage.setItem('current_order_id', orderId);
         localStorage.setItem('farmer_id', farmerId); // Store farmer_id for checkout page
         localStorage.setItem('product_id', items[0].id); // Store product_id for checkout page
         
@@ -186,26 +234,47 @@ function Cart({ isOpen, closeCart }) {
         
         toast.success('Redirecting to checkout...');
         
-        // Close cart and navigate to checkout page
+        // Log the data we're storing for checkout
+        console.log('Stored checkout data:', {
+          clientSecret: clientSecret ? `${clientSecret.substring(0, 10)}...` : null,
+          orderId,
+          farmerId
+        });
+        
+        // Close cart and navigate to appropriate page
         closeCart();
-        navigate('/checkout');
+        
+        if (clientSecret === 'placeholder') {
+          // If we don't have a real client secret, go to orders page instead
+          navigate(`/orders/${orderId}`);
+        } else {
+          // Normal flow - go to checkout
+          navigate('/checkout');
+        }
         
         // Clear cart only after successful payment intent creation and navigation
         clearCart();
       } catch (stripeError) {
         console.error('Stripe payment error:', stripeError);
         console.error('Error response:', stripeError.response?.data);
-        toast.error(
-          'Payment processing failed: ' + 
-          (stripeError.response?.data?.detail || 
-           stripeError.response?.data?.error || 
-           stripeError.message || 
-           'Please try again')
-        );
+        
+        // Check if this is a network error
+        if (stripeError.message && stripeError.message.includes('Network Error')) {
+          toast.error('Network error. Please check your connection and try again.');
+        } else {
+          toast.error(
+            'Payment processing failed: ' + 
+            (stripeError.response?.data?.detail || 
+             stripeError.response?.data?.error || 
+             stripeError.message || 
+             'Please try again')
+          );
+        }
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      toast.error('Failed to process your order. Please try again.');
+      console.error('Error details:', error.response?.data || 'No response data');
+      toast.error('Failed to initialize checkout. Please try again.');
     } finally {
       setIsProcessing(false);
     }

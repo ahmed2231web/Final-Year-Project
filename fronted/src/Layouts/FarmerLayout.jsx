@@ -4,7 +4,7 @@ import { FaCommentAlt } from "react-icons/fa";
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Logo from "../assets/Logo.png";
 import { FaBars } from 'react-icons/fa';
-import authService from '../Services/autheServices';
+import authService from '../Services/authService';
 import { toast } from 'react-hot-toast';
 
 function Header({ toggleSidebar }) {
@@ -63,17 +63,27 @@ function FarmerLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Create the ref outside of useEffect
+  const isInitialMount = useState(true)[0];
+  
   useEffect(() => {
     console.log('FarmerLayout mounted');
     console.log('Current path:', location.pathname);
     
-    const token = authService.getAccessToken();
-    console.log('Has token:', !!token);
-    
-    if (!token) {
-      console.log('No token found in FarmerLayout, redirecting to login');
-      navigate('/login');
-      return;
+    // Check authentication on first render only
+    if (isInitialMount) {
+      // Only check token on initial mount to prevent redirect loops
+      const token = authService.getToken();
+      console.log('Has token:', !!token);
+      
+      if (!token) {
+        console.log('No token found in FarmerLayout, redirecting to login');
+        navigate('/login');
+        return;
+      }
+      
+      // Set isInitialMount to false after first check
+      // We don't need to update state since we only need this for the first render
     }
     
     // If we're at exactly /farmer, redirect to /farmer/dashboard
@@ -81,7 +91,7 @@ function FarmerLayout() {
       console.log('At /farmer root, redirecting to /farmer/dashboard');
       navigate('/farmer/dashboard');
     }
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, isInitialMount]);
 
   return (
     <div className="min-h-screen flex flex-col">

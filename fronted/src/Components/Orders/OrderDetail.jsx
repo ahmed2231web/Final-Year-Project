@@ -168,71 +168,94 @@ const OrderDetail = () => {
   const [processingAction, setProcessingAction] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  // Fetch order details
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const data = await getOrderById(orderId, token);
-        
-        // Process the order items to ensure they have proper image URLs
-        if (data && data.items && Array.isArray(data.items)) {
-          // Make sure each item has a product_image property
-          data.items = data.items.map(item => {
-            // If the item already has a valid image URL, use it
-            if (item.product_image && (item.product_image.startsWith('http') || item.product_image.startsWith('/'))) {
-              return item;
+  // Define fetchOrder function outside useEffect so it can be called from anywhere in the component
+  const fetchOrder = async () => {
+    try {
+      setLoading(true);
+      const data = await getOrderById(orderId, token);
+      
+      // Process the order items to ensure they have proper image URLs
+      if (data && data.items && Array.isArray(data.items)) {
+        // Make sure each item has a product_image property
+        data.items = data.items.map(item => {
+          // If the item already has a valid image URL, use it
+          if (item.product_image && (item.product_image.startsWith('http') || item.product_image.startsWith('/'))) {
+            return item;
+          }
+          
+          // Try to get image from localStorage if available
+          try {
+            // Try from agroConnectCart first (used in checkout)
+            const cartItems = JSON.parse(localStorage.getItem('agroConnectCart') || '[]');
+            const matchingCartItem = cartItems.find(cartItem => 
+              cartItem.id === item.product_id || 
+              cartItem.id === item.id || 
+              cartItem.product_id === item.product_id
+            );
+            
+            if (matchingCartItem && matchingCartItem.imageUrl) {
+              return { ...item, product_image: matchingCartItem.imageUrl };
             }
             
-            // Try to get image from localStorage if available
-            try {
-              // Try from agroConnectCart first (used in checkout)
-              const cartItems = JSON.parse(localStorage.getItem('agroConnectCart') || '[]');
-              const matchingCartItem = cartItems.find(cartItem => 
-                cartItem.id === item.product_id || 
-                cartItem.id === parseInt(item.product_id)
-              );
-              
-              if (matchingCartItem && matchingCartItem.imageUrl) {
-                return {
-                  ...item,
-                  product_image: matchingCartItem.imageUrl
-                };
+            // Try from product cache as fallback
+            const cachedProduct = localStorage.getItem(`product_${item.product_id}`);
+            if (cachedProduct) {
+              const productData = JSON.parse(cachedProduct);
+              if (productData.image) {
+                return { ...item, product_image: productData.image };
               }
-              
-              // Check if we have stored this product image previously
-              const storedImage = localStorage.getItem(`product_image_${item.product_id}`);
-              if (storedImage) {
-                return {
-                  ...item,
-                  product_image: storedImage
-                };
-              }
-            } catch (error) {
-              console.error('Error retrieving image from localStorage:', error);
             }
             
-            // Use a placeholder image if no image is available
-            return {
-              ...item,
-              product_image: 'https://via.placeholder.com/150?text=No+Image'
-            };
-          });
-        }
-        
-        setOrder(data);
-        setFeedbackSubmitted(data.has_feedback);
-      } catch (err) {
-        console.error('Error fetching order:', err);
-        setError('Could not load order details. Please try again later.');
-      } finally {
-        setLoading(false);
+            // If we still don't have an image, try to fetch it
+            getProductById(item.product_id)
+              .then(productData => {
+                if (productData && productData.image) {
+                  // Update the order item with the image URL
+                  setOrder(prevOrder => {
+                    if (!prevOrder || !prevOrder.items) return prevOrder;
+                    
+                    const updatedItems = prevOrder.items.map(orderItem => {
+                      if (orderItem.product_id === item.product_id) {
+                        return { ...orderItem, product_image: productData.image };
+                      }
+                      return orderItem;
+                    });
+                    
+                    return { ...prevOrder, items: updatedItems };
+                  });
+                  
+                  // Cache the product data
+                  localStorage.setItem(`product_${item.product_id}`, JSON.stringify(productData));
+                }
+              })
+              .catch(err => console.error(`Error fetching product ${item.product_id}:`, err));
+          } catch (err) {
+            console.error('Error processing cart data:', err);
+          }
+          
+          // Return the item as is if we couldn't find an image
+          return item;
+        });
       }
-    };
+      
+      setOrder(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching order:', err);
+      setError('Could not load order details. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Call fetchOrder when component mounts or when orderId/token changes
+  useEffect(() => {
     if (orderId && token) {
       fetchOrder();
     }
-  }, [orderId, token]);
+  }, [orderId, token]); // eslint-disable-line react-hooks/exhaustive-deps
+  // We're intentionally not including fetchOrder in the dependency array
+  // to avoid infinite re-renders
 
   // Handle confirming receipt of order
   const handleConfirmReceipt = async () => {
@@ -253,12 +276,118 @@ const OrderDetail = () => {
   const handleConfirmPayment = async () => {
     setProcessingAction(true);
     try {
-      const result = await confirmOrderPayment(orderId, token);
-      setOrder(result.order);
-      toast.success('Payment confirmed successfully! Funds have been released to the farmer.');
+      console.log(`Attempting to confirm payment for order ${orderId} with token: ${token ? 'exists' : 'missing'}`);
+      
+      // Check if we have a valid token before proceeding
+      if (!token) {
+        toast.error('Authentication required. Please log in again.');
+        setProcessingAction(false);
+        return;
+      }
+      
+      // Make sure we have a valid order ID
+      if (!orderId) {
+        toast.error('Invalid order ID. Please try again.');
+        setProcessingAction(false);
+        return;
+      }
+      
+      // Check if the order has payment data and validate payment status
+      if (order) {
+        // Log order payment data for debugging
+        console.log('Order payment data:', {
+          orderId: order.id,
+          orderStatus: order.status,
+          paymentStatus: order.payment_status,
+          paymentData: order.payment_data || 'Not available'
+        });
+        
+        // Check if the order is in a state that can be confirmed
+        // This is a more robust check using the existing order data
+        if (order.status === 'pending' && !order.payment_status) {
+          toast.error('This order cannot be confirmed yet. The payment must be processed through Stripe first.');
+          setTimeout(() => {
+            toast.error('Please complete the payment process from your cart before confirming.');
+          }, 100);
+          setProcessingAction(false);
+          return;
+        }
+      }
+      
+      // Also check localStorage for payment success information as a fallback
+      const paymentSuccess = localStorage.getItem('payment_success');
+      const paymentSuccessOrderId = localStorage.getItem('payment_success_order_id');
+      
+      console.log('Payment success data from localStorage:', {
+        paymentSuccess,
+        paymentSuccessOrderId,
+        currentOrderId: orderId
+      });
+      
+      // Use the order ID from the current order state if available (more reliable)
+      const targetOrderId = order?.id || orderId;
+      console.log(`Using order ID for confirmation: ${targetOrderId}`);
+      
+      // Show loading toast for the confirmation process
+      const loadingToast = toast.loading('Processing payment confirmation...');
+      
+      let result;
+      try {
+        result = await confirmOrderPayment(targetOrderId, token);
+        // Clear the loading toast on success
+        toast.dismiss(loadingToast);
+        
+        // Clear payment success data from localStorage after successful confirmation
+        if (paymentSuccess && paymentSuccessOrderId === orderId) {
+          localStorage.removeItem('payment_success');
+          localStorage.removeItem('payment_success_order_id');
+        }
+      } catch (error) {
+        // Clear the loading toast on error
+        toast.dismiss(loadingToast);
+        
+        // If the error is related to payment status, provide a clearer message
+        if (error.message && error.message.includes('PaymentIntent')) {
+          console.log('Payment intent error detected, providing clearer message');
+          error.message = 'Payment must be completed through Stripe checkout before confirming. Please complete the payment process from your cart.';
+        }
+        
+        throw error; // Re-throw to be caught by the outer try/catch
+      }
+      
+      // Update the local order state with the result
+      if (result && result.order) {
+        setOrder(result.order);
+        toast.success('Payment confirmed successfully! Funds have been released to the farmer.');
+      } else if (result) {
+        // If we got a result but no order object, update anyway
+        setOrder(prev => ({ ...prev, status: 'completed' }));
+        toast.success('Payment confirmed successfully!');
+      }
+      
+      // Refresh the order data to ensure we have the latest state
+      // Use setTimeout to ensure state updates complete before fetching
+      setTimeout(() => {
+        fetchOrder();
+      }, 500);
     } catch (err) {
       console.error('Error confirming payment:', err);
-      toast.error('Failed to confirm payment. Please try again.');
+      
+      // Provide more specific error messages based on the error type
+      if (err.message && err.message.includes('Payment confirmation failed:')) {
+        // Use the specific error message from the backend
+        toast.error(err.message);
+      } else if (err.response && err.response.status === 400) {
+        // Handle common 400 errors
+        const errorDetail = err.response.data?.detail || 'Invalid request';
+        toast.error(`Payment confirmation failed: ${errorDetail}`);
+      } else if (err.response && err.response.status === 401) {
+        // Authentication error
+        toast.error('Your session has expired. Please log in again.');
+      } else {
+        // Generic error
+        toast.error('Failed to confirm payment. Please try again.');
+      }
     } finally {
       setProcessingAction(false);
     }

@@ -5,6 +5,8 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_BACKEND_DOMAIN || 'http://localhost:8000';
 
+
+
 /**
  * Updates the status of an order
  * @param {string} roomId - The ID of the chat room (order)
@@ -149,18 +151,90 @@ export const confirmOrderReceipt = async (orderId, token) => {
  */
 export const confirmOrderPayment = async (orderId, token) => {
     try {
+        if (!orderId) {
+            throw new Error('Order ID is required');
+        }
+        
+        if (!token) {
+            throw new Error('Authentication token is required');
+        }
+        
+        // Extract numeric ID if it's in the format 'order_123_xyz'
+        let targetId = orderId;
+        
+        // Handle different order ID formats
+        if (typeof orderId === 'string') {
+            // If it's a string that starts with 'order_'
+            if (orderId.startsWith('order_')) {
+                const parts = orderId.split('_');
+                if (parts.length >= 2) targetId = parts[1];
+            }
+            
+            // If it contains non-numeric characters but isn't a special format
+            if (isNaN(targetId) && !orderId.startsWith('order_')) {
+                // Try to extract numeric portion
+                const numericPart = orderId.match(/\d+/);
+                if (numericPart) targetId = numericPart[0];
+            }
+        }
+        
+        console.log(`Confirming payment for order ID: ${targetId} (original: ${orderId})`);
+        
+        // Make sure targetId is a valid format for the API
+        if (!targetId || isNaN(targetId)) {
+            console.error('Invalid order ID format:', orderId, 'processed as:', targetId);
+            throw new Error('Invalid order ID format');
+        }
+        
         const response = await axios.post(
-            `${API_URL}/api/orders/orders/${orderId}/confirm-payment/`,
-            {},
+            `${API_URL}/api/orders/orders/${targetId}/confirm-payment/`,
+            {}, // Empty body
             {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             }
         );
+        
+        console.log('Payment confirmation successful:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error confirming order payment:', error);
+        
+        // Add more detailed error information
+        if (error.response) {
+            console.error('Error response status:', error.response.status);
+            console.error('Error response data:', error.response.data);
+            
+            // Handle Stripe-specific errors
+            if (error.response.data && error.response.data.error && 
+                error.response.data.error.includes('PaymentIntent')) {
+                
+                // Extract the specific payment status issue
+                const errorMsg = error.response.data.error;
+                
+                if (errorMsg.includes('requires_payment_method')) {
+                    throw new Error('Payment has not been processed yet. Please complete the payment through Stripe checkout first.');
+                } else if (errorMsg.includes('requires_capture')) {
+                    throw new Error('Payment is authorized but not yet captured. Please try again.');
+                } else {
+                    // Generic Stripe error
+                    throw new Error(`Payment confirmation failed: ${errorMsg}`);
+                }
+            }
+            // If the backend provides specific error details
+            else if (error.response.data && error.response.data.detail) {
+                throw new Error(`Payment confirmation failed: ${error.response.data.detail}`);
+            } else if (error.response.data && typeof error.response.data === 'object') {
+                // Try to extract error message from response data
+                const errorMessage = Object.values(error.response.data)[0];
+                if (errorMessage) {
+                    throw new Error(`Payment confirmation failed: ${errorMessage}`);
+                }
+            }
+        }
+        
         throw error;
     }
 };

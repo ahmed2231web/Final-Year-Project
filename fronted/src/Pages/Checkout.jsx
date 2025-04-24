@@ -5,11 +5,15 @@ import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckout from '../Components/Checkout/StripeCheckout';
 import { FaArrowLeft, FaShoppingBag } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import authService from '../Services/autheServices';
+import authService from '../Services/authService';
+import { getAuthToken, refreshToken } from '../Services/autheServices';
 import { getProductById } from '../Services/apiCustomerProducts';
 
 // Load Stripe outside of component to avoid recreating it on every render
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+
+// Log Stripe key to verify it's loaded correctly
+console.log('Stripe Public Key available:', !!import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -23,23 +27,88 @@ const Checkout = () => {
   useEffect(() => {
     const initCheckout = async () => {
       try {
-        // Get fresh token
-        const freshToken = await authService.refreshToken();
-        if (!freshToken) {
-          toast.error('Your session has expired. Please login again.');
-          navigate('/login');
-          return;
+        console.log('Initializing checkout page...');
+        
+        // Try to get the token, first checking if we have an access token directly
+        let currentToken = null;
+        
+        try {
+          // First try to get access token directly from both auth services
+          // This ensures we check both localStorage and sessionStorage
+          currentToken = authService.getToken() || getAuthToken();
+          console.log('Using existing access token:', currentToken ? 'exists' : 'missing');
+          
+          // If we have a token, verify it's still valid
+          if (currentToken) {
+            // Set the token we'll use for the checkout
+            setToken(currentToken);
+          } else {
+            // Try refreshing as a fallback using both auth services
+            try {
+              // Try authService first
+              const freshToken = await authService.refreshToken();
+              if (freshToken) {
+                console.log('Successfully refreshed token with authService');
+                setToken(freshToken.access || freshToken);
+                currentToken = freshToken.access || freshToken;
+              }
+            } catch (innerError) {
+              // If that fails, try autheServices
+              try {
+                const freshToken = await refreshToken();
+                if (freshToken) {
+                  console.log('Successfully refreshed token with autheServices');
+                  setToken(freshToken.access || freshToken);
+                  currentToken = freshToken.access || freshToken;
+                }
+              } catch (secondError) {
+                console.log('Both token refresh attempts failed');
+                // Continue without a token
+              }
+            }
+          }
+        } catch (tokenError) {
+          console.warn('Token refresh failed, but will continue with stored data:', tokenError.message);
+          // We'll continue even without a fresh token as the client secret should be enough for payment
         }
-        setToken(freshToken);
+        
+        // Even if we don't have a token, we'll try to proceed with the checkout
+        // as long as we have the client secret, since that's what Stripe needs
 
         // Get client secret and other data from localStorage
         const storedClientSecret = localStorage.getItem('payment_intent_client_secret');
         const storedOrderId = localStorage.getItem('current_order_id');
         const storedFarmerId = localStorage.getItem('farmer_id');
         const storedOrderSummary = localStorage.getItem('last_order_summary');
+        
+        console.log('Retrieved from localStorage:',{
+          clientSecret: storedClientSecret ? `${storedClientSecret.substring(0, 10)}...` : null,
+          orderId: storedOrderId,
+          farmerId: storedFarmerId,
+          orderSummary: storedOrderSummary ? 'exists' : null
+        });
 
         if (!storedClientSecret || !storedOrderId || !storedFarmerId) {
+          console.error('Missing required checkout data:', {
+            hasClientSecret: !!storedClientSecret,
+            hasOrderId: !!storedOrderId,
+            hasFarmerId: !!storedFarmerId
+          });
           toast.error('Payment information not found. Please try again.');
+          navigate('/customer/dashboard');
+          return;
+        }
+        
+        // Log if we're proceeding without a valid token
+        if (!currentToken) {
+          console.warn('Proceeding with checkout without a valid token. ' + 
+                      'This might work for the payment confirmation but could cause issues with order updates.');
+        }
+        
+        // Validate client secret format
+        if (storedClientSecret === 'placeholder' || !storedClientSecret.startsWith('pi_')) {
+          console.error('Invalid client secret format:', storedClientSecret.substring(0, 10));
+          toast.error('Invalid payment information. Please try again from the cart.');
           navigate('/customer/dashboard');
           return;
         }
@@ -107,8 +176,19 @@ const Checkout = () => {
         }
       } catch (error) {
         console.error('Error initializing checkout:', error);
-        toast.error('Failed to initialize checkout. Please try again.');
-        navigate('/customer/dashboard');
+        
+        // Check if we have enough to continue anyway
+        const clientSecretExists = localStorage.getItem('payment_intent_client_secret');
+        
+        if (clientSecretExists && error.message && error.message.includes('refresh token')) {
+          // We can continue despite the refresh token error if we have a client secret
+          console.warn('Continuing with checkout despite token refresh error');
+          setLoading(false);
+          // We'll try to proceed with the checkout even without a fresh token
+        } else {
+          toast.error('Failed to initialize checkout. Please try again.');
+          navigate('/customer/dashboard');
+        }
       } finally {
         setLoading(false);
       }
@@ -248,15 +328,31 @@ const Checkout = () => {
             <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
             
             {clientSecret && (
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
+              <Elements 
+                stripe={stripePromise} 
+                options={{
+                  clientSecret,
+                  appearance: {
+                    theme: 'stripe',
+                    variables: {
+                      colorPrimary: '#32925e',
+                      colorBackground: '#ffffff',
+                      colorText: '#32325d',
+                      colorDanger: '#fa755a',
+                      fontFamily: 'Roboto, Open Sans, Segoe UI, sans-serif',
+                    }
+                  },
+                }}
+              >
                 <StripeCheckout 
                   orderData={{
                     orderId: orderId,
                     farmerId: farmerId,
+                    clientSecret: clientSecret, // Pass client secret to child component
                     customerName: localStorage.getItem('user_name') || 'Customer',
                     customerEmail: localStorage.getItem('user_email') || ''
                   }}
-                  token={token}
+                  token={localStorage.getItem('access_token')} // Use direct localStorage access for token
                   onSuccess={handlePaymentSuccess}
                 />
               </Elements>

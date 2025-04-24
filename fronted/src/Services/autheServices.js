@@ -10,8 +10,10 @@ const API_URL = import.meta.env.VITE_BACKEND_DOMAIN || 'http://localhost:8000';
  * @returns {string|null} - The authentication token or null if not found
  */
 export const getAuthToken = () => {
-    console.log('Getting stored access token:', localStorage.getItem('access_token') ? 'Token exists' : 'No token');
-    return localStorage.getItem('access_token');
+    // Try to get token from localStorage first, then sessionStorage (same as authService.js)
+    const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    console.log('Getting stored access token:', token ? 'Token exists' : 'No token');
+    return token;
 };
 
 /**
@@ -127,29 +129,38 @@ export const logout = () => {
  */
 export const refreshToken = async () => {
     try {
-        const refresh = localStorage.getItem('refresh_token');
+        // Try to get refresh token from localStorage first, then sessionStorage (same as authService.js)
+        const refresh = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
         if (!refresh) {
+            console.log('refreshToken: No refresh token found');
             throw new Error('No refresh token found');
         }
 
-        console.log('Refreshing token...');
+        console.log('refreshToken: Attempting to refresh token');
         const response = await axios.post(
             `${API_URL}/auth/jwt/refresh/`,
             { refresh }
         );
 
         if (response.data.access) {
-            localStorage.setItem('access_token', response.data.access);
-            console.log('Token refreshed successfully');
+            // Store in the same storage that had the refresh token
+            if (localStorage.getItem('refresh_token')) {
+                localStorage.setItem('access_token', response.data.access);
+            } else if (sessionStorage.getItem('refresh_token')) {
+                sessionStorage.setItem('access_token', response.data.access);
+            }
+            console.log('refreshToken: Token refresh successful');
             return response.data;
         } else {
             throw new Error('No access token in response');
         }
     } catch (error) {
         console.error('Error refreshing token:', error);
-        // If refresh fails, redirect to login
+        // If refresh fails, clear tokens from both storages
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('refresh_token');
         localStorage.removeItem('userData');
         throw error;
     }
