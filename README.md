@@ -80,10 +80,30 @@ AgroConnect is a cutting-edge agricultural e-commerce platform bridging the gap 
 - Order management
 - Secure checkout process
 
+### 🔄 Order Flow & Lifecycle
+- **Complete Order Lifecycle Management**: 
+  - Pending → Shipped → Delivered → Completed status progression
+- **Customer Journey**:
+  - Orders begin in 'Pending' status after payment authorization
+  - Farmers mark orders as 'Shipped' when products are dispatched
+  - Customers confirm receipt to update status to 'Delivered'
+  - Payment is captured and order is marked 'Completed'
+- **Visual Progress Tracking**: Interactive order status visualization
+- **Status-specific Actions**: Different action buttons based on order status
+- **Notification System**: Status change alerts for all parties
+
 ### 💬 Communication
 - Real-time messaging
 - Notifications system
 - Rating and review system
+
+### 💯 Product Feedback & Rating System
+- **Post-Purchase Feedback**: Customers can rate and review products after order completion
+- **Star Rating System**: Intuitive 1-5 star rating interface
+- **Detailed Reviews**: Optional text feedback for comprehensive product experiences
+- **Review Aggregation**: Product pages display average ratings and review counts
+- **Feedback Analytics**: Farmers receive insights based on customer feedback
+- **Verified Purchases**: Reviews are linked to confirmed orders for authenticity
 
 ### 🤖 AI Chatbot & Disease Detection
 - Image-based crop disease detection
